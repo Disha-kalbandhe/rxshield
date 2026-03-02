@@ -1,0 +1,16 @@
+{
+  "contamination": 0.05,
+  "n_estimators": 100,
+  "features": [
+    "prescribed_dose_mg",
+    "normal_dose_mg",
+    "dose_ratio",
+    "patient_age",
+    "patient_weight",
+    "duration_days",
+    "route_encoded"
+  ],
+  "trained_at": "2026-03-02T14:35:47.265931",
+  "training_samples": 19240,
+  "drugs_covered": 57
+}
