@@ -35,13 +35,13 @@ const ErrorCard = ({ error }) => {
 
   return (
     <div
-      className={`bg-gray-900 border ${colorClass} ${pulseClass} rounded-xl p-4 ${hoverColorClass} transition-all`}
+      className={`bg-gray-50 dark:bg-gray-900 border ${colorClass} ${pulseClass} rounded-xl p-4 ${hoverColorClass} transition-all`}
     >
       {/* Header row */}
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           <Icon size={20} className={iconColorClass} />
-          <span className="text-sm font-medium text-gray-300">
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
             {config.label}
           </span>
         </div>
@@ -51,17 +51,17 @@ const ErrorCard = ({ error }) => {
       {/* Drug info row */}
       {(error.drug || (error.drug_a && error.drug_b)) && (
         <div className="mb-2">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {error.drug && (
               <span>
                 Drug:{" "}
-                <span className="font-semibold text-gray-200">
+                <span className="font-semibold text-gray-700 dark:text-gray-200">
                   {error.drug}
                 </span>
               </span>
             )}
             {error.drug_a && error.drug_b && (
-              <span className="font-semibold text-gray-200">
+              <span className="font-semibold text-gray-700 dark:text-gray-200">
                 {error.drug_a} + {error.drug_b}
               </span>
             )}
@@ -70,7 +70,9 @@ const ErrorCard = ({ error }) => {
       )}
 
       {/* Message */}
-      <p className="text-gray-300 text-sm mb-3">{error.message}</p>
+      <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+        {error.message}
+      </p>
 
       {/* Confidence */}
       {error.confidence !== undefined && (
@@ -81,10 +83,10 @@ const ErrorCard = ({ error }) => {
 
       {/* Details accordion */}
       {error.details && Object.keys(error.details).length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-800">
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800">
           <button
             onClick={() => setDetailsOpen(!detailsOpen)}
-            className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-200 transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
           >
             {detailsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             <span>Details</span>
@@ -94,10 +96,12 @@ const ErrorCard = ({ error }) => {
             <div className="mt-3 space-y-2">
               {Object.entries(error.details).map(([key, value]) => (
                 <div key={key} className="flex gap-2 text-xs">
-                  <span className="text-gray-500 font-medium min-w-[100px]">
+                  <span className="text-gray-500 font-medium min-w-25">
                     {key}:
                   </span>
-                  <span className="text-gray-400">{String(value)}</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    {String(value)}
+                  </span>
                 </div>
               ))}
             </div>

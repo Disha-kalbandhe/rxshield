@@ -38,12 +38,14 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-gray-900 rounded-2xl p-8 shadow-xl border border-gray-800">
-        <h1 className="text-3xl font-bold text-white mb-2 text-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-gray-800">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 text-center">
           Rx<span className="text-blue-500">Shield</span>
         </h1>
-        <p className="text-gray-400 text-center mb-8">Sign in to continue</p>
+        <p className="text-gray-500 dark:text-gray-400 text-center mb-8">
+          Sign in to continue
+        </p>
 
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-900/40 border border-red-700 text-red-300 text-sm">
@@ -53,24 +55,28 @@ export default function Login() {
 
         <form onSubmit={handleEmailLogin} className="space-y-4 mb-6">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Email</label>
+            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
+              Email
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
               placeholder="you@example.com"
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Password</label>
+            <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
+              Password
+            </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
               placeholder="••••••••"
             />
           </div>
@@ -85,17 +91,19 @@ export default function Login() {
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-700" />
+            <div className="w-full border-t border-gray-300 dark:border-gray-700" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-gray-900 text-gray-500">or</span>
+            <span className="px-2 bg-white dark:bg-gray-900 text-gray-500">
+              or
+            </span>
           </div>
         </div>
 
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-3 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 border border-gray-700 text-white font-semibold py-2 rounded-lg transition"
+          className="w-full flex items-center justify-center gap-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white font-semibold py-2 rounded-lg transition"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path

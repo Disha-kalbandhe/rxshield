@@ -138,7 +138,7 @@ const PatientProfile = () => {
           <div className="flex items-center gap-3">
             <User className="text-blue-400" size={32} />
             <div>
-              <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 Patient Profiles
                 <span className="bg-blue-600 text-white text-sm font-semibold px-3 py-1 rounded-full">
                   {patients.length}
@@ -157,14 +157,14 @@ const PatientProfile = () => {
 
         {/* ADD/EDIT FORM */}
         {showForm && (
-          <div className="bg-gray-900 border border-blue-700/50 rounded-2xl p-6 mb-6">
+          <div className="bg-gray-50 dark:bg-gray-900 border border-blue-700/50 rounded-2xl p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 {editingId ? "Edit" : "Add New"} Patient
               </h2>
               <button
                 onClick={closeForm}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               >
                 <X size={20} />
               </button>
@@ -174,7 +174,7 @@ const PatientProfile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Name */}
                 <div className="md:col-span-2 lg:col-span-1">
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Name *
                   </label>
                   <input
@@ -185,13 +185,13 @@ const PatientProfile = () => {
                     value={formData.name}
                     onChange={(e) => updateField("name", e.target.value)}
                     placeholder="Patient name"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 {/* Age */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Age *
                   </label>
                   <input
@@ -204,13 +204,13 @@ const PatientProfile = () => {
                     value={formData.age}
                     onChange={(e) => updateField("age", e.target.value)}
                     placeholder="Age"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 {/* Gender */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Gender
                   </label>
                   <select
@@ -218,7 +218,7 @@ const PatientProfile = () => {
                     name="gender"
                     value={formData.gender}
                     onChange={(e) => updateField("gender", e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                   >
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
@@ -228,7 +228,7 @@ const PatientProfile = () => {
 
                 {/* Blood Group */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Blood Group
                   </label>
                   <select
@@ -236,7 +236,7 @@ const PatientProfile = () => {
                     name="blood_group"
                     value={formData.blood_group}
                     onChange={(e) => updateField("blood_group", e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                   >
                     <option value="">Select</option>
                     <option value="A+">A+</option>
@@ -252,7 +252,7 @@ const PatientProfile = () => {
 
                 {/* Weight */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Weight (kg)
                   </label>
                   <input
@@ -263,13 +263,13 @@ const PatientProfile = () => {
                     value={formData.weight_kg}
                     onChange={(e) => updateField("weight_kg", e.target.value)}
                     placeholder="Weight in kg"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 {/* City */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     City
                   </label>
                   <input
@@ -279,13 +279,13 @@ const PatientProfile = () => {
                     value={formData.city}
                     onChange={(e) => updateField("city", e.target.value)}
                     placeholder="City"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 {/* Diagnosis */}
                 <div className="col-span-full">
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Diagnosis
                   </label>
                   <input
@@ -295,13 +295,13 @@ const PatientProfile = () => {
                     value={formData.diagnosis}
                     onChange={(e) => updateField("diagnosis", e.target.value)}
                     placeholder="Type 2 Diabetes, Hypertension"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 {/* Allergies */}
                 <div className="col-span-full">
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Allergies
                   </label>
                   <input
@@ -311,13 +311,13 @@ const PatientProfile = () => {
                     value={formData.allergies}
                     onChange={(e) => updateField("allergies", e.target.value)}
                     placeholder="Penicillin, Sulfa (comma separated)"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 {/* Current Medications */}
                 <div className="col-span-full">
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Current Medications
                   </label>
                   <input
@@ -329,13 +329,13 @@ const PatientProfile = () => {
                       updateField("current_medications", e.target.value)
                     }
                     placeholder="Metformin, Amlodipine"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 {/* Comorbidities */}
                 <div className="col-span-full">
-                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                     Comorbidities
                   </label>
                   <input
@@ -347,7 +347,7 @@ const PatientProfile = () => {
                       updateField("comorbidities", e.target.value)
                     }
                     placeholder="Obesity, CKD (optional)"
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -382,7 +382,7 @@ const PatientProfile = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name or patient ID..."
-            className="w-full bg-gray-900 border border-gray-800 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
+            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
           />
         </div>
 
@@ -392,24 +392,32 @@ const PatientProfile = () => {
             <LoadingSpinner text="Loading patients..." />
           </div>
         ) : patients.length === 0 ? (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
-            <User size={48} className="text-gray-700 mx-auto mb-3" />
-            <p className="text-gray-400">No patients yet</p>
-            <p className="text-gray-600 text-sm mt-1">
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
+            <User
+              size={48}
+              className="text-gray-400 dark:text-gray-700 mx-auto mb-3"
+            />
+            <p className="text-gray-500 dark:text-gray-400">No patients yet</p>
+            <p className="text-gray-400 dark:text-gray-600 text-sm mt-1">
               Click "Add Patient" to create the first profile
             </p>
           </div>
         ) : filteredPatients.length === 0 ? (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
-            <Search size={48} className="text-gray-700 mx-auto mb-3" />
-            <p className="text-gray-400">No patients match your search</p>
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
+            <Search
+              size={48}
+              className="text-gray-400 dark:text-gray-700 mx-auto mb-3"
+            />
+            <p className="text-gray-500 dark:text-gray-400">
+              No patients match your search
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
             {filteredPatients.map((patient) => (
               <div
                 key={patient.id}
-                className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden"
+                className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden"
               >
                 {/* COLLAPSED ROW */}
                 <div className="px-5 py-4 flex items-center justify-between">
@@ -421,7 +429,7 @@ const PatientProfile = () => {
 
                     {/* Name & ID */}
                     <div>
-                      <h3 className="text-white font-semibold">
+                      <h3 className="text-gray-900 dark:text-white font-semibold">
                         {patient.name}
                       </h3>
                       <p className="text-gray-500 text-xs">
@@ -432,7 +440,7 @@ const PatientProfile = () => {
 
                   {/* Middle Info (hidden on mobile) */}
                   <div className="hidden md:flex items-center gap-3 flex-1">
-                    <span className="bg-gray-800 text-gray-300 text-xs px-2 py-1 rounded">
+                    <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-xs px-2 py-1 rounded">
                       {patient.age} yrs • {patient.gender}
                     </span>
                     {patient.diagnosis && patient.diagnosis.length > 0 && (
@@ -462,7 +470,7 @@ const PatientProfile = () => {
                           expandedId === patient.id ? null : patient.id,
                         )
                       }
-                      className="text-gray-400 hover:text-white transition-colors p-2"
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors p-2"
                     >
                       {expandedId === patient.id ? (
                         <ChevronUp size={18} />
@@ -487,11 +495,11 @@ const PatientProfile = () => {
 
                 {/* EXPANDED SECTION */}
                 {expandedId === patient.id && (
-                  <div className="border-t border-gray-800 px-5 py-4">
+                  <div className="border-t border-gray-200 dark:border-gray-800 px-5 py-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Allergies */}
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-400 mb-2">
+                        <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
                           Allergies
                         </h4>
                         {patient.allergies && patient.allergies.length > 0 ? (
@@ -506,13 +514,15 @@ const PatientProfile = () => {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-gray-600 text-sm">None known</p>
+                          <p className="text-gray-500 dark:text-gray-600 text-sm">
+                            None known
+                          </p>
                         )}
                       </div>
 
                       {/* Current Medications */}
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-400 mb-2">
+                        <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
                           Current Medications
                         </h4>
                         {patient.current_medications &&
@@ -528,13 +538,15 @@ const PatientProfile = () => {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-gray-600 text-sm">None</p>
+                          <p className="text-gray-500 dark:text-gray-600 text-sm">
+                            None
+                          </p>
                         )}
                       </div>
 
                       {/* Blood Group / Weight */}
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-400 mb-2">
+                        <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
                           Blood Group / Weight
                         </h4>
                         <p className="text-gray-300 text-sm">
@@ -545,10 +557,10 @@ const PatientProfile = () => {
 
                       {/* City / Comorbidities */}
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-400 mb-2">
+                        <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">
                           City / Comorbidities
                         </h4>
-                        <p className="text-gray-300 text-sm">
+                        <p className="text-gray-600 dark:text-gray-300 text-sm">
                           {patient.city || "N/A"}
                         </p>
                         {patient.comorbidities &&
@@ -557,7 +569,7 @@ const PatientProfile = () => {
                               {patient.comorbidities.map((comorb, i) => (
                                 <span
                                   key={i}
-                                  className="bg-gray-800 text-gray-400 text-xs px-2 py-1 rounded"
+                                  className="bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs px-2 py-1 rounded"
                                 >
                                   {comorb}
                                 </span>

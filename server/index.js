@@ -35,6 +35,7 @@ app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
     service: "RxShield API",
+    mlApiUrl: process.env.ML_API_URL,
     timestamp: new Date().toISOString(),
   });
 });
