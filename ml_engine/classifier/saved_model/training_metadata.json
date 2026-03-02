@@ -1,0 +1,25 @@
+{
+  "model_type": "RandomForestClassifier",
+  "n_estimators": 200,
+  "val_f1": 0.4588910133843212,
+  "val_accuracy": 0.9114518147684606,
+  "val_auc": 0.7793156191253252,
+  "feature_columns": [
+    "patient_age",
+    "patient_weight",
+    "is_male",
+    "num_diagnoses",
+    "num_current_meds",
+    "num_allergies",
+    "normal_dose_mg",
+    "prescribed_dose_mg",
+    "dose_ratio",
+    "num_drugs_in_rx",
+    "drug_class_encoded",
+    "drug_route_encoded",
+    "drug_matches_any_diagnosis",
+    "drug_is_inappropriate",
+    "has_comorbidity"
+  ],
+  "trained_at": "2026-03-02T14:27:51.202152"
+}

@@ -1,0 +1,458 @@
+{
+  "alcohol": {
+    "mean_dose": 100.0,
+    "std_dose": 0.0,
+    "min_dose": 100.0,
+    "max_dose": 100.0,
+    "sample_count": 22,
+    "normal_dose_from_formulary": 0.0
+  },
+  "amlodipine": {
+    "mean_dose": 10.8795,
+    "std_dose": 15.0991,
+    "min_dose": 5.0,
+    "max_dose": 55.0,
+    "sample_count": 307,
+    "normal_dose_from_formulary": 5.0
+  },
+  "amlodipine as monotherapy": {
+    "mean_dose": 91.2903,
+    "std_dose": 148.1326,
+    "min_dose": 20.0,
+    "max_dose": 460.0,
+    "sample_count": 31,
+    "normal_dose_from_formulary": 0.0
+  },
+  "amoxapine": {
+    "mean_dose": 498.6567,
+    "std_dose": 29.5238,
+    "min_dose": 450.0,
+    "max_dose": 550.0,
+    "sample_count": 67,
+    "normal_dose_from_formulary": 0.0
+  },
+  "amoxicillin": {
+    "mean_dose": 496.3426,
+    "std_dose": 41.6952,
+    "min_dose": 20.0,
+    "max_dose": 550.0,
+    "sample_count": 756,
+    "normal_dose_from_formulary": 500.0
+  },
+  "antibiotics": {
+    "mean_dose": 121.0714,
+    "std_dose": 125.3171,
+    "min_dose": 5.0,
+    "max_dose": 545.0,
+    "sample_count": 28,
+    "normal_dose_from_formulary": 0.0
+  },
+  "aspirin": {
+    "mean_dose": 73.75,
+    "std_dose": 8.0886,
+    "min_dose": 20.0,
+    "max_dose": 80.0,
+    "sample_count": 48,
+    "normal_dose_from_formulary": 75.0
+  },
+  "atenolol": {
+    "mean_dose": 49.042,
+    "std_dose": 7.1759,
+    "min_dose": 5.0,
+    "max_dose": 55.0,
+    "sample_count": 882,
+    "normal_dose_from_formulary": 50.0
+  },
+  "atorvastatin": {
+    "mean_dose": 20.0,
+    "std_dose": 0.0,
+    "min_dose": 20.0,
+    "max_dose": 20.0,
+    "sample_count": 557,
+    "normal_dose_from_formulary": 20.0
+  },
+  "azithromycin": {
+    "mean_dose": 497.5249,
+    "std_dose": 48.9264,
+    "min_dose": 20.0,
+    "max_dose": 550.0,
+    "sample_count": 402,
+    "normal_dose_from_formulary": 500.0
+  },
+  "bupropion": {
+    "mean_dose": 139.1667,
+    "std_dose": 148.2629,
+    "min_dose": 5.0,
+    "max_dose": 505.0,
+    "sample_count": 24,
+    "normal_dose_from_formulary": 0.0
+  },
+  "carbamazepine": {
+    "mean_dose": 203.122,
+    "std_dose": 31.0951,
+    "min_dose": 25.0,
+    "max_dose": 495.0,
+    "sample_count": 418,
+    "normal_dose_from_formulary": 200.0
+  },
+  "ciprofloxacin": {
+    "mean_dose": 501.1703,
+    "std_dose": 28.4693,
+    "min_dose": 450.0,
+    "max_dose": 550.0,
+    "sample_count": 816,
+    "normal_dose_from_formulary": 500.0
+  },
+  "clopidogrel": {
+    "mean_dose": 88.1667,
+    "std_dose": 80.8795,
+    "min_dose": 30.0,
+    "max_dose": 535.0,
+    "sample_count": 60,
+    "normal_dose_from_formulary": 75.0
+  },
+  "diclofenac": {
+    "mean_dose": 51.7511,
+    "std_dose": 9.3418,
+    "min_dose": 45.0,
+    "max_dose": 105.0,
+    "sample_count": 454,
+    "normal_dose_from_formulary": 50.0
+  },
+  "digoxin": {
+    "mean_dose": 6.2599,
+    "std_dose": 10.3007,
+    "min_dose": 5.0,
+    "max_dose": 105.0,
+    "sample_count": 758,
+    "normal_dose_from_formulary": 0.25
+  },
+  "doxepin": {
+    "mean_dose": 5.0,
+    "std_dose": 0.0,
+    "min_dose": 5.0,
+    "max_dose": 5.0,
+    "sample_count": 53,
+    "normal_dose_from_formulary": 0.0
+  },
+  "doxycycline": {
+    "mean_dose": 99.8166,
+    "std_dose": 7.0878,
+    "min_dose": 45.0,
+    "max_dose": 110.0,
+    "sample_count": 927,
+    "normal_dose_from_formulary": 100.0
+  },
+  "erythromycin": {
+    "mean_dose": 495.9524,
+    "std_dose": 29.9424,
+    "min_dose": 455.0,
+    "max_dose": 550.0,
+    "sample_count": 21,
+    "normal_dose_from_formulary": 0.0
+  },
+  "esomeprazole": {
+    "mean_dose": 20.0,
+    "std_dose": 0.0,
+    "min_dose": 20.0,
+    "max_dose": 20.0,
+    "sample_count": 46,
+    "normal_dose_from_formulary": 0.0
+  },
+  "fluconazole": {
+    "mean_dose": 150.5986,
+    "std_dose": 8.8088,
+    "min_dose": 135.0,
+    "max_dose": 165.0,
+    "sample_count": 568,
+    "normal_dose_from_formulary": 150.0
+  },
+  "fluoroquinolones as monotherapy": {
+    "mean_dose": 328.1081,
+    "std_dose": 221.3354,
+    "min_dose": 5.0,
+    "max_dose": 650.0,
+    "sample_count": 37,
+    "normal_dose_from_formulary": 0.0
+  },
+  "furosemide": {
+    "mean_dose": 44.2167,
+    "std_dose": 22.3794,
+    "min_dose": 5.0,
+    "max_dose": 160.0,
+    "sample_count": 466,
+    "normal_dose_from_formulary": 40.0
+  },
+  "gentamicin": {
+    "mean_dose": 100.0,
+    "std_dose": 0.0,
+    "min_dose": 100.0,
+    "max_dose": 100.0,
+    "sample_count": 20,
+    "normal_dose_from_formulary": 0.0
+  },
+  "glibenclamide": {
+    "mean_dose": 5.0,
+    "std_dose": 0.0,
+    "min_dose": 5.0,
+    "max_dose": 5.0,
+    "sample_count": 401,
+    "normal_dose_from_formulary": 5.0
+  },
+  "glimepiride": {
+    "mean_dose": 5.0,
+    "std_dose": 0.0,
+    "min_dose": 5.0,
+    "max_dose": 5.0,
+    "sample_count": 28,
+    "normal_dose_from_formulary": 0.0
+  },
+  "hydrochlorothiazide": {
+    "mean_dose": 25.0,
+    "std_dose": 0.0,
+    "min_dose": 25.0,
+    "max_dose": 25.0,
+    "sample_count": 297,
+    "normal_dose_from_formulary": 25.0
+  },
+  "ibuprofen": {
+    "mean_dose": 392.4805,
+    "std_dose": 48.7053,
+    "min_dose": 5.0,
+    "max_dose": 440.0,
+    "sample_count": 512,
+    "normal_dose_from_formulary": 400.0
+  },
+  "insulin glargine": {
+    "mean_dose": 13.6458,
+    "std_dose": 34.2718,
+    "min_dose": 10.0,
+    "max_dose": 435.0,
+    "sample_count": 432,
+    "normal_dose_from_formulary": 10.0
+  },
+  "isoniazid": {
+    "mean_dose": 300.4825,
+    "std_dose": 27.436,
+    "min_dose": 10.0,
+    "max_dose": 435.0,
+    "sample_count": 456,
+    "normal_dose_from_formulary": 300.0
+  },
+  "levothyroxine": {
+    "mean_dose": 50.0386,
+    "std_dose": 3.5373,
+    "min_dose": 45.0,
+    "max_dose": 55.0,
+    "sample_count": 906,
+    "normal_dose_from_formulary": 50.0
+  },
+  "lisinopril": {
+    "mean_dose": 11.1952,
+    "std_dose": 6.793,
+    "min_dose": 10.0,
+    "max_dose": 55.0,
+    "sample_count": 661,
+    "normal_dose_from_formulary": 10.0
+  },
+  "losartan": {
+    "mean_dose": 44.4135,
+    "std_dose": 13.6697,
+    "min_dose": 10.0,
+    "max_dose": 55.0,
+    "sample_count": 341,
+    "normal_dose_from_formulary": 50.0
+  },
+  "mao inhibitors": {
+    "mean_dose": 100.0,
+    "std_dose": 0.0,
+    "min_dose": 100.0,
+    "max_dose": 100.0,
+    "sample_count": 33,
+    "normal_dose_from_formulary": 0.0
+  },
+  "metformin": {
+    "mean_dose": 491.9508,
+    "std_dose": 40.5192,
+    "min_dose": 5.0,
+    "max_dose": 550.0,
+    "sample_count": 651,
+    "normal_dose_from_formulary": 500.0
+  },
+  "metronidazole": {
+    "mean_dose": 408.168,
+    "std_dose": 36.3818,
+    "min_dose": 360.0,
+    "max_dose": 545.0,
+    "sample_count": 363,
+    "normal_dose_from_formulary": 400.0
+  },
+  "omeprazole": {
+    "mean_dose": 20.0,
+    "std_dose": 0.0,
+    "min_dose": 20.0,
+    "max_dose": 20.0,
+    "sample_count": 517,
+    "normal_dose_from_formulary": 20.0
+  },
+  "oral contraceptives": {
+    "mean_dose": 100.0,
+    "std_dose": 0.0,
+    "min_dose": 100.0,
+    "max_dose": 100.0,
+    "sample_count": 32,
+    "normal_dose_from_formulary": 0.0
+  },
+  "oxcarbazepine": {
+    "mean_dose": 202.3077,
+    "std_dose": 9.7191,
+    "min_dose": 185.0,
+    "max_dose": 220.0,
+    "sample_count": 26,
+    "normal_dose_from_formulary": 0.0
+  },
+  "pantoprazole": {
+    "mean_dose": 41.0017,
+    "std_dose": 17.6283,
+    "min_dose": 35.0,
+    "max_dose": 455.0,
+    "sample_count": 594,
+    "normal_dose_from_formulary": 40.0
+  },
+  "paracetamol": {
+    "mean_dose": 496.3196,
+    "std_dose": 57.0922,
+    "min_dose": 25.0,
+    "max_dose": 550.0,
+    "sample_count": 485,
+    "normal_dose_from_formulary": 500.0
+  },
+  "phenytoin": {
+    "mean_dose": 100.7333,
+    "std_dose": 28.7764,
+    "min_dose": 5.0,
+    "max_dose": 550.0,
+    "sample_count": 450,
+    "normal_dose_from_formulary": 100.0
+  },
+  "prednisolone": {
+    "mean_dose": 14.1787,
+    "std_dose": 42.4042,
+    "min_dose": 10.0,
+    "max_dose": 520.0,
+    "sample_count": 414,
+    "normal_dose_from_formulary": 10.0
+  },
+  "prednisone": {
+    "mean_dose": 10.0,
+    "std_dose": 0.0,
+    "min_dose": 10.0,
+    "max_dose": 10.0,
+    "sample_count": 50,
+    "normal_dose_from_formulary": 0.0
+  },
+  "propylthiouracil": {
+    "mean_dose": 60.1515,
+    "std_dose": 94.0286,
+    "min_dose": 5.0,
+    "max_dose": 530.0,
+    "sample_count": 33,
+    "normal_dose_from_formulary": 0.0
+  },
+  "ramipril": {
+    "mean_dose": 5.0,
+    "std_dose": 0.0,
+    "min_dose": 5.0,
+    "max_dose": 5.0,
+    "sample_count": 674,
+    "normal_dose_from_formulary": 5.0
+  },
+  "rifampicin": {
+    "mean_dose": 592.4629,
+    "std_dose": 74.3654,
+    "min_dose": 5.0,
+    "max_dose": 660.0,
+    "sample_count": 404,
+    "normal_dose_from_formulary": 600.0
+  },
+  "rifaximin": {
+    "mean_dose": 599.4118,
+    "std_dose": 36.1974,
+    "min_dose": 545.0,
+    "max_dose": 660.0,
+    "sample_count": 34,
+    "normal_dose_from_formulary": 0.0
+  },
+  "salbutamol": {
+    "mean_dose": 5.3111,
+    "std_dose": 2.1915,
+    "min_dose": 5.0,
+    "max_dose": 25.0,
+    "sample_count": 450,
+    "normal_dose_from_formulary": 2.0
+  },
+  "simvastatin": {
+    "mean_dose": 19.9307,
+    "std_dose": 1.3158,
+    "min_dose": 5.0,
+    "max_dose": 25.0,
+    "sample_count": 577,
+    "normal_dose_from_formulary": 20.0
+  },
+  "spironolactone": {
+    "mean_dose": 24.6651,
+    "std_dose": 2.3943,
+    "min_dose": 5.0,
+    "max_dose": 25.0,
+    "sample_count": 433,
+    "normal_dose_from_formulary": 25.0
+  },
+  "toradol": {
+    "mean_dose": 50.0,
+    "std_dose": 2.9957,
+    "min_dose": 45.0,
+    "max_dose": 55.0,
+    "sample_count": 40,
+    "normal_dose_from_formulary": 0.0
+  },
+  "torsemide": {
+    "mean_dose": 41.1364,
+    "std_dose": 3.0597,
+    "min_dose": 35.0,
+    "max_dose": 45.0,
+    "sample_count": 22,
+    "normal_dose_from_formulary": 0.0
+  },
+  "tramadol": {
+    "mean_dose": 50.0571,
+    "std_dose": 3.2527,
+    "min_dose": 45.0,
+    "max_dose": 55.0,
+    "sample_count": 438,
+    "normal_dose_from_formulary": 50.0
+  },
+  "verapamil": {
+    "mean_dose": 80.8333,
+    "std_dose": 52.743,
+    "min_dose": 5.0,
+    "max_dose": 425.0,
+    "sample_count": 84,
+    "normal_dose_from_formulary": 0.0
+  },
+  "verapamil+atenolol": {
+    "mean_dose": 100.6818,
+    "std_dose": 184.1732,
+    "min_dose": 5.0,
+    "max_dose": 550.0,
+    "sample_count": 22,
+    "normal_dose_from_formulary": 0.0
+  },
+  "warfarin": {
+    "mean_dose": 5.0,
+    "std_dose": 0.0,
+    "min_dose": 5.0,
+    "max_dose": 5.0,
+    "sample_count": 612,
+    "normal_dose_from_formulary": 5.0
+  }
+}

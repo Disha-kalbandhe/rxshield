@@ -1,0 +1,17 @@
+[
+  "patient_age",
+  "patient_weight",
+  "is_male",
+  "num_diagnoses",
+  "num_current_meds",
+  "num_allergies",
+  "normal_dose_mg",
+  "prescribed_dose_mg",
+  "dose_ratio",
+  "num_drugs_in_rx",
+  "drug_class_encoded",
+  "drug_route_encoded",
+  "drug_matches_any_diagnosis",
+  "drug_is_inappropriate",
+  "has_comorbidity"
+]
