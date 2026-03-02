@@ -26,6 +26,14 @@ function App() {
             }
           />
           <Route
+            path="/patients"
+            element={
+              <ProtectedRoute>
+                <PatientProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/patient/:id"
             element={
               <ProtectedRoute>
