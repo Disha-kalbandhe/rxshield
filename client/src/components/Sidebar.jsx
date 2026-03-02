@@ -5,12 +5,14 @@ import {
   ScanLine,
   ShieldCheck,
   FileText,
+  Users,
 } from "lucide-react";
 
 const Sidebar = ({ isOpen, onClose }) => {
   const navLinks = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/ocr-upload", icon: ScanLine, label: "OCR Upload" },
+    { path: "/patients", icon: Users, label: "Patients" },
     { path: "/pharmacist", icon: ShieldCheck, label: "Pharmacist" },
     { path: "/audit-log", icon: FileText, label: "Audit Log" },
   ];

@@ -14,28 +14,33 @@ router.post("/", async (req, res) => {
       gender,
       diagnosis,
       allergies,
-      currentMedications,
-      bloodGroup,
-      weight,
-      doctorId,
+      current_medications,
+      blood_group,
+      weight_kg,
+      city,
+      comorbidities,
     } = req.body;
 
-    const docRef = await db.collection("patients").add({
+    const patientData = {
       name,
-      age,
-      gender,
-      diagnosis,
-      allergies,
-      currentMedications,
-      bloodGroup,
-      weight,
-      doctorId,
+      age: age ? parseInt(age) : null,
+      gender: gender || "Male",
+      diagnosis: diagnosis || [],
+      allergies: allergies || [],
+      current_medications: current_medications || [],
+      blood_group: blood_group || "",
+      weight_kg: weight_kg ? parseFloat(weight_kg) : null,
+      city: city || "",
+      comorbidities: comorbidities || [],
       createdAt: new Date().toISOString(),
       createdBy: req.user.uid,
-    });
+    };
+
+    const docRef = await db.collection("patients").add(patientData);
 
     res.json({ success: true, patientId: docRef.id });
   } catch (err) {
+    console.error("[POST /api/patients] Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -43,18 +48,27 @@ router.post("/", async (req, res) => {
 // GET /api/patients — get all patients for logged-in doctor
 router.get("/", async (req, res) => {
   try {
+    console.log("[GET /api/patients] Request from user:", req.user?.uid);
+
     const snapshot = await db
       .collection("patients")
       .where("createdBy", "==", req.user.uid)
-      .orderBy("createdAt", "desc")
       .get();
+
+    console.log("[GET /api/patients] Found", snapshot.docs.length, "patients");
 
     const patients = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
+
+    // Sort by createdAt on server to avoid Firestore composite index requirement
+    patients.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
     res.json(patients);
   } catch (err) {
+    console.error("[GET /api/patients] Error:", err.message);
+    console.error("[GET /api/patients] Stack:", err.stack);
     res.status(500).json({ error: err.message });
   }
 });
@@ -77,16 +91,25 @@ router.get("/:id", async (req, res) => {
 // PUT /api/patients/:id — update patient
 router.put("/:id", async (req, res) => {
   try {
+    // Remove undefined values and prepare update data
+    const updateData = Object.entries(req.body).reduce((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
     await db
       .collection("patients")
       .doc(req.params.id)
       .update({
-        ...req.body,
+        ...updateData,
         updatedAt: new Date().toISOString(),
       });
 
     res.json({ success: true });
   } catch (err) {
+    console.error("[PUT /api/patients/:id] Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
