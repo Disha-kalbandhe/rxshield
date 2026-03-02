@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import RiskReport from "../components/ui/RiskReport";
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 import { usePrescription } from "../hooks/usePrescription";
 import { useAuth } from "../context/AuthContext";
+import { nodeApi } from "../utils/api";
 import {
   Pill,
   User,
@@ -30,6 +31,24 @@ const DoctorDashboard = () => {
     current_medications: "",
     comorbidities: "",
   });
+  const [demoPatients, setDemoPatients] = useState([]);
+  const [loadingDemo, setLoadingDemo] = useState(false);
+
+  // Fetch demo patients on mount
+  useEffect(() => {
+    const fetchDemo = async () => {
+      setLoadingDemo(true);
+      try {
+        const res = await nodeApi.get("/api/patients/demo");
+        setDemoPatients(res.data || []);
+      } catch {
+        // silently fail - demo patients optional
+      } finally {
+        setLoadingDemo(false);
+      }
+    };
+    fetchDemo();
+  }, []);
 
   // Helper to update patient data
   const updatePatient = (field, value) => {
@@ -116,14 +135,14 @@ const DoctorDashboard = () => {
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <Stethoscope className="text-blue-400" size={32} />
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               Prescription Analyzer
             </h1>
           </div>
-          <p className="text-gray-400 mb-2">
+          <p className="text-gray-500 dark:text-gray-400 mb-2">
             Paste prescription text to detect errors instantly
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Welcome back, Dr.{" "}
             {currentUser?.displayName ||
               currentUser?.email?.split("@")[0] ||
@@ -132,11 +151,11 @@ const DoctorDashboard = () => {
         </div>
 
         {/* MAIN FORM CARD */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-4">
+        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 mb-4">
           <form onSubmit={handleAnalyze} className="space-y-6">
             {/* SECTION 1 — Quick Sample Buttons */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-3">
+              <label className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">
                 Quick Test Samples:
               </label>
               <div className="flex flex-wrap gap-2">
@@ -145,7 +164,7 @@ const DoctorDashboard = () => {
                     key={index}
                     type="button"
                     onClick={() => setPrescriptionText(sample.text)}
-                    className="text-xs border border-gray-700 rounded-lg px-3 py-1.5 hover:bg-gray-800 text-gray-400 transition-colors"
+                    className="text-xs border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
                   >
                     {sample.label}
                   </button>
@@ -155,7 +174,7 @@ const DoctorDashboard = () => {
 
             {/* SECTION 2 — Prescription Text Area */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">
                 <Pill size={16} />
                 Prescription Text *
               </label>
@@ -164,9 +183,9 @@ const DoctorDashboard = () => {
                 value={prescriptionText}
                 onChange={(e) => setPrescriptionText(e.target.value)}
                 placeholder="Paste prescription text here...\n\nExample:\nRx:\n1. Metformin 500mg twice daily x 30 days\n2. Aspirin 75mg once daily"
-                className="w-full bg-gray-800 border border-gray-700 rounded-xl p-4 text-white placeholder-gray-600 resize-none focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl p-4 text-gray-900 dark:text-white placeholder-gray-600 resize-none focus:outline-none focus:border-blue-500 font-mono text-sm transition-colors"
               />
-              <p className="text-xs text-gray-500 text-right mt-1">
+              <p className="text-xs text-gray-400 dark:text-gray-500 text-right mt-1">
                 {prescriptionText.length} characters
               </p>
             </div>
@@ -176,7 +195,7 @@ const DoctorDashboard = () => {
               <button
                 type="button"
                 onClick={() => setShowPatientForm(!showPatientForm)}
-                className="w-full flex items-center justify-between bg-gray-800 rounded-xl px-4 py-3 text-gray-300 hover:bg-gray-750 transition-colors"
+                className="w-full flex items-center justify-between bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <User size={16} />
@@ -192,11 +211,11 @@ const DoctorDashboard = () => {
               </button>
 
               {showPatientForm && (
-                <div className="mt-4 bg-gray-800/50 rounded-xl p-4">
+                <div className="mt-4 bg-gray-100/50 dark:bg-gray-800/50 rounded-xl p-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Age */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                         Age
                       </label>
                       <input
@@ -204,13 +223,13 @@ const DoctorDashboard = () => {
                         value={patientData.age}
                         onChange={(e) => updatePatient("age", e.target.value)}
                         placeholder="Patient age"
-                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                       />
                     </div>
 
                     {/* Gender */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                         Gender
                       </label>
                       <select
@@ -218,7 +237,7 @@ const DoctorDashboard = () => {
                         onChange={(e) =>
                           updatePatient("gender", e.target.value)
                         }
-                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                       >
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
@@ -228,7 +247,7 @@ const DoctorDashboard = () => {
 
                     {/* Weight */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                         Weight (kg)
                       </label>
                       <input
@@ -239,13 +258,13 @@ const DoctorDashboard = () => {
                           updatePatient("weight_kg", e.target.value)
                         }
                         placeholder="Weight in kg"
-                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                       />
                     </div>
 
                     {/* Diagnosis */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                         Diagnosis (comma-separated)
                       </label>
                       <input
@@ -255,13 +274,13 @@ const DoctorDashboard = () => {
                           updatePatient("diagnosis", e.target.value)
                         }
                         placeholder="e.g. Type 2 Diabetes, Hypertension"
-                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                       />
                     </div>
 
                     {/* Allergies */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                         Allergies (comma-separated)
                       </label>
                       <input
@@ -271,13 +290,13 @@ const DoctorDashboard = () => {
                           updatePatient("allergies", e.target.value)
                         }
                         placeholder="e.g. Penicillin, Sulfa"
-                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                       />
                     </div>
 
                     {/* Current Medications */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                         Current Medications (comma-separated)
                       </label>
                       <input
@@ -287,12 +306,58 @@ const DoctorDashboard = () => {
                           updatePatient("current_medications", e.target.value)
                         }
                         placeholder="e.g. Metformin, Atenolol"
-                        className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
                       />
                     </div>
                   </div>
 
-                  <p className="text-gray-500 text-xs mt-3">
+                  {/* Quick Load Demo Patient */}
+                  {demoPatients.length > 0 && (
+                    <div className="col-span-full mt-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-500 mb-2">
+                        🏥 Quick load demo patient:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {demoPatients.map((patient) => (
+                          <button
+                            key={patient.id}
+                            type="button"
+                            onClick={() => {
+                              setPatientData({
+                                age: patient.age?.toString() || "",
+                                gender: patient.gender || "Male",
+                                weight_kg: patient.weight_kg?.toString() || "",
+                                diagnosis: (patient.diagnosis || []).join(", "),
+                                allergies: (patient.allergies || []).join(", "),
+                                current_medications: (
+                                  patient.current_medications || []
+                                ).join(", "),
+                                comorbidities: (
+                                  patient.comorbidities || []
+                                ).join(", "),
+                              });
+                              toast.success(`Loaded: ${patient.name}`);
+                            }}
+                            className="text-xs bg-gray-100 dark:bg-gray-800 
+                       border border-gray-300 dark:border-gray-700 
+                       text-gray-700 dark:text-gray-300 
+                       hover:bg-blue-50 dark:hover:bg-blue-900/30 
+                       hover:border-blue-400 dark:hover:border-blue-600
+                       rounded-lg px-3 py-1.5 transition-colors"
+                          >
+                            👤 {patient.name.split(" ")[0]}{" "}
+                            {patient.name.split(" ")[1]}
+                            <span className="text-gray-400 dark:text-gray-500 ml-1">
+                              ({patient.age}y •{" "}
+                              {(patient.diagnosis || []).slice(0, 1).join("")})
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-gray-400 dark:text-gray-500 text-xs mt-3">
                     💡 Adding patient info improves detection accuracy
                   </p>
                 </div>
@@ -322,23 +387,31 @@ const DoctorDashboard = () => {
 
         {/* BOTTOM INFO ROW */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-            <p className="text-white font-semibold mb-1">4 Error Types</p>
-            <p className="text-gray-400 text-xs">
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 text-center">
+            <p className="text-gray-900 dark:text-white font-semibold mb-1">
+              4 Error Types
+            </p>
+            <p className="text-gray-500 dark:text-gray-400 text-xs">
               DDI, LASA, Dosage, Indication
             </p>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-            <p className="text-white font-semibold mb-1">AI Powered</p>
-            <p className="text-gray-400 text-xs">
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 text-center">
+            <p className="text-gray-900 dark:text-white font-semibold mb-1">
+              AI Powered
+            </p>
+            <p className="text-gray-500 dark:text-gray-400 text-xs">
               DistilBERT NER + RandomForest
             </p>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center">
-            <p className="text-white font-semibold mb-1">Instant Results</p>
-            <p className="text-gray-400 text-xs">&lt; 5 second analysis</p>
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 text-center">
+            <p className="text-gray-900 dark:text-white font-semibold mb-1">
+              Instant Results
+            </p>
+            <p className="text-gray-500 dark:text-gray-400 text-xs">
+              &lt; 5 second analysis
+            </p>
           </div>
         </div>
       </div>

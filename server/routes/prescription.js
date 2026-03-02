@@ -101,6 +101,31 @@ router.post("/analyze", async (req, res) => {
   }
 });
 
+// GET /api/prescription/flagged — get prescriptions by status
+router.get("/flagged", async (req, res) => {
+  try {
+    const status = req.query.status || "flagged";
+
+    let query = db.collection("prescriptions");
+
+    if (status !== "all") {
+      query = query.where("status", "==", status);
+    }
+
+    query = query.orderBy("createdAt", "desc").limit(50);
+
+    const snapshot = await query.get();
+    const prescriptions = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.json(prescriptions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/prescription/:id — single prescription
 router.get("/:id", async (req, res) => {
   try {

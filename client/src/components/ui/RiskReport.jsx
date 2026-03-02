@@ -49,10 +49,10 @@ const RiskReport = ({ result, onReset }) => {
   return (
     <div className="space-y-6">
       {/* SECTION A — Header bar */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+      <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-1">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
               Analysis Complete
             </h2>
             <p className="text-gray-500 text-sm">Report ID: {prescriptionId}</p>
@@ -63,16 +63,16 @@ const RiskReport = ({ result, onReset }) => {
           </div>
         </div>
 
-        <p className="text-gray-300 mb-4">{summary}</p>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">{summary}</p>
 
         {/* Risk Score Progress Bar */}
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-400">
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
               Risk Score: {(riskScore * 100).toFixed(0)}%
             </span>
           </div>
-          <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
             <div
               className={`h-full ${getProgressColor()} transition-all duration-500`}
               style={{ width: `${riskScore * 100}%` }}
@@ -83,39 +83,53 @@ const RiskReport = ({ result, onReset }) => {
 
       {/* SECTION B — Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
           <Pill className="text-blue-400 mb-2" size={24} />
-          <p className="text-gray-400 text-xs mb-1">Drugs Found</p>
-          <p className="text-white font-bold text-xl">
+          <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+            Drugs Found
+          </p>
+          <p className="text-gray-900 dark:text-white font-bold text-xl">
             {extractedDrugs.length}
           </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
           <AlertTriangle className="text-orange-400 mb-2" size={24} />
-          <p className="text-gray-400 text-xs mb-1">Issues Found</p>
-          <p className="text-white font-bold text-xl">{errors.length}</p>
+          <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+            Issues Found
+          </p>
+          <p className="text-gray-900 dark:text-white font-bold text-xl">
+            {errors.length}
+          </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
           <Clock className="text-purple-400 mb-2" size={24} />
-          <p className="text-gray-400 text-xs mb-1">Analysis Time</p>
-          <p className="text-white font-bold text-xl">{processingTime_ms}ms</p>
+          <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+            Analysis Time
+          </p>
+          <p className="text-gray-900 dark:text-white font-bold text-xl">
+            {processingTime_ms}ms
+          </p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
           <CheckCircle className="text-green-400 mb-2" size={24} />
-          <p className="text-gray-400 text-xs mb-1">Status</p>
-          <p className="text-white font-bold text-xl">{riskLevel}</p>
+          <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+            Status
+          </p>
+          <p className="text-gray-900 dark:text-white font-bold text-xl">
+            {riskLevel}
+          </p>
         </div>
       </div>
 
       {/* SECTION C — Extracted Drugs */}
       {extractedDrugs.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+        <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-4">
             <Pill className="text-blue-400" size={20} />
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Extracted Drugs
             </h3>
           </div>
@@ -155,7 +169,7 @@ const RiskReport = ({ result, onReset }) => {
           </div>
         ) : (
           <div className="space-y-6">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               ⚠️ Issues Detected ({errors.length})
             </h3>
 
@@ -238,7 +252,7 @@ const RiskReport = ({ result, onReset }) => {
       <div className="flex gap-3">
         <button
           onClick={onReset}
-          className="flex items-center gap-2 px-6 py-3 border border-gray-700 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors font-medium"
+          className="flex items-center gap-2 px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-medium"
         >
           <RotateCcw size={18} />
           Analyze Another

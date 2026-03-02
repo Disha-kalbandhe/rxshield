@@ -73,6 +73,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET /api/patients/demo — get all demo patients
+router.get("/demo", async (req, res) => {
+  try {
+    const snapshot = await db
+      .collection("patients")
+      .where("isDemo", "==", true)
+      .get();
+
+    const demoPatients = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.json(demoPatients);
+  } catch (err) {
+    console.error("[GET /api/patients/demo] Error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/patients/:id — get single patient
 router.get("/:id", async (req, res) => {
   try {

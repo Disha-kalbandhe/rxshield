@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu, X, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import ThemeToggle from "./ui/ThemeToggle";
 
 const Navbar = ({ onMenuToggle }) => {
   const [mlStatus, setMlStatus] = useState("checking");
@@ -59,8 +60,10 @@ const Navbar = ({ onMenuToggle }) => {
         {/* Right side */}
         <div className="flex items-center gap-3">
           {/* ML Status indicator */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-900 rounded-lg border border-gray-800">
-            <span className="text-xs text-gray-400">ML API</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              ML API
+            </span>
             <div
               className={`w-2 h-2 rounded-full ${
                 mlStatus === "online"
@@ -72,12 +75,15 @@ const Navbar = ({ onMenuToggle }) => {
             />
           </div>
 
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
           {/* User display */}
           <div className="flex items-center gap-2">
             <div className="bg-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold">
               {getInitial()}
             </div>
-            <span className="hidden sm:inline text-sm text-gray-300">
+            <span className="hidden sm:inline text-sm text-gray-600 dark:text-gray-300">
               {getUserDisplayName()}
             </span>
           </div>
@@ -85,7 +91,7 @@ const Navbar = ({ onMenuToggle }) => {
           {/* Logout button */}
           <button
             onClick={handleLogout}
-            className="text-gray-400 hover:text-red-400 transition-colors p-2 hover:bg-gray-800 rounded-lg"
+            className="text-gray-500 dark:text-gray-400 hover:text-red-400 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
             title="Logout"
           >
             <LogOut size={20} />

@@ -57,7 +57,7 @@ const AuditLog = () => {
           <div className="flex items-center gap-3">
             <FileText className="text-purple-400" size={32} />
             <div>
-              <h1 className="text-3xl font-bold text-white flex items-center gap-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 Audit Log
                 <span className="bg-purple-600 text-white text-sm font-semibold px-3 py-1 rounded-full">
                   Total: {count}
@@ -68,7 +68,7 @@ const AuditLog = () => {
           <button
             onClick={refresh}
             disabled={loading}
-            className="border border-gray-700 text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-800 flex items-center gap-2 text-sm font-medium transition-colors disabled:opacity-50"
+            className="border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-2 text-sm font-medium transition-colors disabled:opacity-50"
           >
             <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
             Refresh
@@ -88,7 +88,7 @@ const AuditLog = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by Rx ID, Patient ID, Doctor ID..."
-              className="w-full bg-gray-900 border border-gray-800 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
+              className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -96,7 +96,7 @@ const AuditLog = () => {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-blue-500"
+            className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:border-blue-500"
           >
             <option value="all">All Records</option>
             <option value="flagged">⚠️ Flagged Only</option>
@@ -108,7 +108,7 @@ const AuditLog = () => {
             onClick={() =>
               setSortOrder((prev) => (prev === "desc" ? "asc" : "desc"))
             }
-            className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm hover:bg-gray-800 transition-colors flex items-center gap-2"
+            className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
           >
             <Filter size={16} />
             {sortOrder === "desc" ? "Newest First" : "Oldest First"}
@@ -117,18 +117,26 @@ const AuditLog = () => {
 
         {/* SUMMARY STATS ROW */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center">
-            <p className="text-gray-400 text-xs mb-1">Total</p>
-            <p className="text-white font-bold text-xl">{displayLogs.length}</p>
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3 text-center">
+            <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+              Total
+            </p>
+            <p className="text-gray-900 dark:text-white font-bold text-xl">
+              {displayLogs.length}
+            </p>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center">
-            <p className="text-gray-400 text-xs mb-1">Flagged</p>
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3 text-center">
+            <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+              Flagged
+            </p>
             <p className="text-red-400 font-bold text-xl">
               {displayLogs.filter((l) => l.errorCount > 0).length}
             </p>
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-3 text-center">
-            <p className="text-gray-400 text-xs mb-1">Clear</p>
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-3 text-center">
+            <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+              Clear
+            </p>
             <p className="text-green-400 font-bold text-xl">
               {displayLogs.filter((l) => l.errorCount === 0).length}
             </p>
@@ -141,10 +149,15 @@ const AuditLog = () => {
             <LoadingSpinner text="Loading audit logs..." />
           </div>
         ) : displayLogs.length === 0 ? (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-12 text-center">
-            <FileText size={48} className="text-gray-700 mx-auto mb-3" />
-            <p className="text-gray-400">No audit logs found</p>
-            <p className="text-gray-600 text-sm mt-1">
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
+            <FileText
+              size={48}
+              className="text-gray-400 dark:text-gray-700 mx-auto mb-3"
+            />
+            <p className="text-gray-500 dark:text-gray-400">
+              No audit logs found
+            </p>
+            <p className="text-gray-400 dark:text-gray-600 text-sm mt-1">
               {searchQuery || filterType !== "all"
                 ? "Try adjusting your filters"
                 : "Logs will appear as prescriptions are analyzed"}
@@ -152,10 +165,10 @@ const AuditLog = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto bg-gray-900 border border-gray-800 rounded-xl">
+            <div className="overflow-x-auto bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-800 text-gray-400 text-sm">
+                  <tr className="border-b border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 text-sm">
                     <th className="text-left py-3 px-4 font-medium">
                       Timestamp
                     </th>
@@ -179,10 +192,10 @@ const AuditLog = () => {
                   {displayLogs.map((log, index) => (
                     <tr
                       key={log.id || index}
-                      className="border-b border-gray-900 hover:bg-gray-900/50 transition-colors text-sm"
+                      className="border-b border-gray-100 dark:border-gray-900 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors text-sm"
                     >
                       {/* Timestamp */}
-                      <td className="py-3 px-4 text-gray-400">
+                      <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-1.5">
                           <Clock size={12} className="text-gray-600" />
                           {new Date(log.timestamp).toLocaleString("en-IN", {
@@ -202,13 +215,13 @@ const AuditLog = () => {
                       </td>
 
                       {/* Patient ID */}
-                      <td className="py-3 px-4 text-gray-300">
+                      <td className="py-3 px-4 text-gray-600 dark:text-gray-300">
                         {log.patientId || "—"}
                       </td>
 
                       {/* Doctor ID */}
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5 text-gray-400">
+                        <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
                           <User size={12} />
                           {log.doctorId || "—"}
                         </div>
@@ -232,7 +245,7 @@ const AuditLog = () => {
                       {/* Risk Score */}
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                          <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full ${
                                 log.riskScore > 0.6
@@ -246,7 +259,7 @@ const AuditLog = () => {
                               }}
                             />
                           </div>
-                          <span className="text-gray-400 text-xs">
+                          <span className="text-gray-500 dark:text-gray-400 text-xs">
                             {((log.riskScore || 0) * 100).toFixed(0)}%
                           </span>
                         </div>

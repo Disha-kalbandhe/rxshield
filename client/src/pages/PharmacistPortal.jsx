@@ -93,39 +93,55 @@ const PharmacistPortal = () => {
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <ShieldCheck className="text-green-400" size={32} />
-            <h1 className="text-3xl font-bold text-white">Pharmacist Portal</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Pharmacist Portal
+            </h1>
           </div>
-          <p className="text-gray-400">
+          <p className="text-gray-500 dark:text-gray-400">
             Review and approve flagged prescriptions
           </p>
         </div>
 
         {/* STATS ROW */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
             <Clock className="text-blue-400 mb-2" size={24} />
-            <p className="text-gray-400 text-xs mb-1">Pending Review</p>
-            <p className="text-white font-bold text-2xl">
+            <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+              Pending Review
+            </p>
+            <p className="text-gray-900 dark:text-white font-bold text-2xl">
               {filter === "flagged" ? prescriptions.length : "—"}
             </p>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
             <CheckCircle className="text-green-400 mb-2" size={24} />
-            <p className="text-gray-400 text-xs mb-1">Approved Today</p>
-            <p className="text-white font-bold text-2xl">—</p>
+            <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+              Approved Today
+            </p>
+            <p className="text-gray-900 dark:text-white font-bold text-2xl">
+              —
+            </p>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
             <XCircle className="text-red-400 mb-2" size={24} />
-            <p className="text-gray-400 text-xs mb-1">Rejected Today</p>
-            <p className="text-white font-bold text-2xl">—</p>
+            <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+              Rejected Today
+            </p>
+            <p className="text-gray-900 dark:text-white font-bold text-2xl">
+              —
+            </p>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
             <ShieldCheck className="text-purple-400 mb-2" size={24} />
-            <p className="text-gray-400 text-xs mb-1">Total Reviewed</p>
-            <p className="text-white font-bold text-2xl">—</p>
+            <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">
+              Total Reviewed
+            </p>
+            <p className="text-gray-900 dark:text-white font-bold text-2xl">
+              —
+            </p>
           </div>
         </div>
 
@@ -138,7 +154,7 @@ const PharmacistPortal = () => {
               className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-colors ${
                 filter === tab
                   ? "bg-blue-600 text-white"
-                  : "bg-gray-900 border border-gray-800 text-gray-400 hover:text-white"
+                  : "bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -153,8 +169,11 @@ const PharmacistPortal = () => {
           </div>
         ) : prescriptions.length === 0 ? (
           <div className="text-center py-16 text-gray-500">
-            <ShieldCheck size={48} className="mx-auto mb-4 text-gray-700" />
-            <p className="text-lg font-medium text-gray-400">
+            <ShieldCheck
+              size={48}
+              className="mx-auto mb-4 text-gray-400 dark:text-gray-700"
+            />
+            <p className="text-lg font-medium text-gray-500 dark:text-gray-400">
               {filter === "flagged"
                 ? "No flagged prescriptions"
                 : `No ${filter} prescriptions`}
@@ -170,7 +189,7 @@ const PharmacistPortal = () => {
             {prescriptions.map((prescription) => (
               <div
                 key={prescription.id}
-                className="bg-gray-900 border border-gray-800 rounded-xl p-5"
+                className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5"
               >
                 {/* TOP ROW */}
                 <div className="flex items-start justify-between mb-3">
@@ -220,8 +239,8 @@ const PharmacistPortal = () => {
 
                 {/* PRESCRIPTION TEXT */}
                 <div className="mt-3">
-                  <div className="bg-gray-800 rounded-lg px-4 py-3">
-                    <p className="text-gray-400 font-mono text-sm">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg px-4 py-3">
+                    <p className="text-gray-600 dark:text-gray-400 font-mono text-sm">
                       {truncate(
                         prescription.prescriptionText ||
                           prescription.text ||
@@ -269,7 +288,7 @@ const PharmacistPortal = () => {
                     <div className="space-y-3">
                       {/* Note Textarea */}
                       <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-2 flex items-center gap-1">
+                        <label className="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
                           <MessageSquare size={12} />
                           Pharmacist Note (required for rejection)
                         </label>
@@ -278,7 +297,7 @@ const PharmacistPortal = () => {
                           onChange={(e) => setNote(e.target.value)}
                           placeholder="Add pharmacist note (required for rejection)..."
                           rows={2}
-                          className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:border-blue-500"
+                          className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:border-blue-500"
                         />
                       </div>
 
@@ -317,7 +336,7 @@ const PharmacistPortal = () => {
                         <button
                           onClick={() => setReviewingId(null)}
                           disabled={actionLoading}
-                          className="flex items-center gap-2 px-4 py-2 border border-gray-700 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-sm font-medium transition-colors"
                         >
                           <X size={14} />
                           Cancel

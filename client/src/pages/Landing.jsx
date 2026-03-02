@@ -4,9 +4,9 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
       {/* Navbar */}
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-gray-800">
+      <nav className="flex items-center justify-between px-8 py-5 border-b border-gray-200 dark:border-gray-800">
         <div className="text-2xl font-bold text-blue-400">💊 RxShield</div>
         <button
           onClick={() => navigate("/login")}
@@ -26,7 +26,7 @@ const Landing = () => {
           <br />
           <span className="text-blue-400">Errors Before They Happen</span>
         </h1>
-        <p className="text-gray-400 text-xl max-w-2xl mb-10">
+        <p className="text-gray-500 dark:text-gray-400 text-xl max-w-2xl mb-10">
           RxShield uses AI to detect drug-drug interactions, dosage anomalies,
           LASA confusion, and indication mismatches — instantly.
         </p>
@@ -64,13 +64,15 @@ const Landing = () => {
         ].map((card, i) => (
           <div
             key={i}
-            className="bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-blue-700 transition-colors"
+            className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 hover:border-blue-700 transition-colors"
           >
             <div className="text-3xl mb-3">{card.icon}</div>
-            <h3 className="text-white font-semibold text-lg mb-2">
+            <h3 className="text-gray-900 dark:text-white font-semibold text-lg mb-2">
               {card.title}
             </h3>
-            <p className="text-gray-400 text-sm">{card.desc}</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              {card.desc}
+            </p>
           </div>
         ))}
       </div>
