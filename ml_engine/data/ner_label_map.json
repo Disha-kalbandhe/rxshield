@@ -1,0 +1,11 @@
+{
+  "O": 0,
+  "B-DRUG": 1,
+  "I-DRUG": 2,
+  "B-DOSE": 3,
+  "I-DOSE": 4,
+  "B-FREQ": 5,
+  "I-FREQ": 6,
+  "B-DURATION": 7,
+  "I-DURATION": 8
+}
