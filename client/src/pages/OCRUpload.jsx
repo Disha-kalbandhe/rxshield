@@ -30,6 +30,9 @@ const OCRUpload = () => {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [editableText, setEditableText] = useState("");
   const [language, setLanguage] = useState("auto");
+  const [structuredDrugs, setStructuredDrugs] = useState([]);
+  const [patientInfo, setPatientInfo] = useState(null);
+  const [showAutoFill, setShowAutoFill] = useState(false);
   const fileInputRef = useRef(null);
 
   // Handle file selection/upload
@@ -76,6 +79,9 @@ const OCRUpload = () => {
     setPreviewUrl(null);
     setOcrResult(null);
     setEditableText("");
+    setStructuredDrugs([]);
+    setPatientInfo(null);
+    setShowAutoFill(false);
     reset();
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -92,12 +98,26 @@ const OCRUpload = () => {
 
       const res = await ocrApi.extract(formData);
       setOcrResult(res.data);
-      setEditableText(res.data.cleanedText || res.data.extractedText || "");
-      toast.success(
-        `✅ OCR complete! ${res.data.charCount} characters extracted`,
-      );
+
+      const cleaned = res.data.cleanedText || res.data.extractedText || "";
+      setEditableText(cleaned);
+
+      // Store structured data from Gemini
+      if (res.data.structuredDrugs?.length > 0) {
+        setStructuredDrugs(res.data.structuredDrugs);
+      }
+      if (res.data.patientInfo) {
+        setPatientInfo(res.data.patientInfo);
+        setShowAutoFill(true);
+      }
+
+      const engine = res.data.engine || "OCR";
+      toast.success(`✅ ${engine}: ${res.data.charCount} chars extracted!`, {
+        duration: 4000,
+      });
     } catch (err) {
-      toast.error(err.message || "OCR extraction failed");
+      const msg = err.response?.data?.error || err.message || "OCR failed";
+      toast.error(`❌ ${msg}`);
     } finally {
       setOcrLoading(false);
     }
@@ -302,7 +322,87 @@ const OCRUpload = () => {
                       Confidence: {ocrResult.confidence.toFixed(1)}%
                     </span>
                   )}
+                  {ocrResult.engine?.includes("Gemini") && (
+                    <span className="inline-flex items-center gap-1 bg-blue-900/30 border border-blue-700/50 text-blue-400 px-2 py-1 rounded text-xs">
+                      🤖 AI-Powered
+                    </span>
+                  )}
+                  {structuredDrugs.length > 0 && (
+                    <span className="inline-flex items-center gap-1 bg-green-900/30 border border-green-700/50 text-green-400 px-2 py-1 rounded text-xs">
+                      ✅ {structuredDrugs.length} drugs found
+                    </span>
+                  )}
                 </div>
+
+                {/* Gemini Structured Extraction Panel */}
+                {structuredDrugs.length > 0 && (
+                  <div className="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/50 rounded-xl p-4">
+                    <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <span>🤖</span> Gemini Auto-Detected Drugs
+                      <span className="text-xs font-normal text-gray-500 dark:text-gray-500 normal-case tracking-normal">
+                        (Click to add to text)
+                      </span>
+                    </p>
+                    <div className="space-y-2">
+                      {structuredDrugs.map((drug, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between bg-white dark:bg-gray-800/60 rounded-lg px-3 py-2"
+                        >
+                          <div>
+                            <span className="text-gray-900 dark:text-white font-medium text-sm">
+                              💊 {drug.name}
+                            </span>
+                            <span className="text-gray-500 dark:text-gray-400 text-xs ml-2">
+                              {[drug.dose, drug.frequency, drug.duration]
+                                .filter(Boolean)
+                                .join(" • ")}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Patient Info Auto-fill Banner */}
+                {showAutoFill && patientInfo && (
+                  <div className="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700/50 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide flex items-center gap-1.5">
+                        <span>✨</span> Patient Info Detected
+                      </p>
+                      <button
+                        onClick={() => setShowAutoFill(false)}
+                        className="text-gray-400 hover:text-gray-300"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                      {patientInfo.patient_name && (
+                        <span className="text-gray-700 dark:text-gray-300">
+                          👤 {patientInfo.patient_name}
+                        </span>
+                      )}
+                      {patientInfo.patient_age && (
+                        <span className="text-gray-700 dark:text-gray-300">
+                          📅 Age: {patientInfo.patient_age}
+                        </span>
+                      )}
+                      {patientInfo.doctor_name && (
+                        <span className="text-gray-700 dark:text-gray-300">
+                          🩺 {patientInfo.doctor_name}
+                        </span>
+                      )}
+                      {patientInfo.hospital_clinic && (
+                        <span className="text-gray-700 dark:text-gray-300">
+                          🏥 {patientInfo.hospital_clinic}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Editable Textarea */}
                 <textarea

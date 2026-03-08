@@ -105,6 +105,26 @@ class AnalyzeResponse(BaseModel):
     processingTime_ms: Optional[float] = None
 
 
+class StructuredDrug(BaseModel):
+    """Structured drug information extracted from prescription."""
+    name: str
+    dose: Optional[str] = None
+    frequency: Optional[str] = None
+    duration: Optional[str] = None
+    quantity: Optional[str] = None
+
+
+class PatientInfo(BaseModel):
+    """Patient information extracted from prescription."""
+    patient_name: Optional[str] = None
+    patient_age: Optional[str] = None
+    patient_address: Optional[str] = None
+    date: Optional[str] = None
+    hospital_clinic: Optional[str] = None
+    doctor_name: Optional[str] = None
+    special_instructions: Optional[str] = None
+
+
 class OCRResponse(BaseModel):
     """Response model for OCR processing."""
     extractedText: str
@@ -114,6 +134,9 @@ class OCRResponse(BaseModel):
     confidence: Optional[float] = None
     charCount: int
     success: bool
+    structuredDrugs: Optional[List[StructuredDrug]] = []
+    patientInfo: Optional[PatientInfo] = None
+    linesDetected: Optional[int] = None
 
 
 class HealthResponse(BaseModel):

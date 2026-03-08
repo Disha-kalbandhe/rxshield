@@ -84,7 +84,7 @@ export const ocrApi = {
   extract: (formData) =>
     nodeApi.post("/api/ocr/extract", formData, {
       headers: { "Content-Type": "multipart/form-data" },
-      timeout: 120000, // 2 minutes timeout for OCR
+      timeout: 30000, // 30 seconds (Gemini is fast now)
     }),
 };
 
