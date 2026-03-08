@@ -81,10 +81,18 @@ export const auditApi = {
 
 // OCR API (hit Node.js which forwards to ML)
 export const ocrApi = {
+  // Old separate extract endpoint (keep for backward compat)
   extract: (formData) =>
     nodeApi.post("/api/ocr/extract", formData, {
       headers: { "Content-Type": "multipart/form-data" },
-      timeout: 30000, // 30 seconds (Gemini is fast now)
+      timeout: 30000,
+    }),
+
+  // NEW: Extract + Analyze in one call — use this in OCRUpload.jsx
+  analyzeImage: (formData) =>
+    nodeApi.post("/api/ocr/analyze", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 45000, // 45s: OCR (3s) + Analyze (2s) + buffer
     }),
 };
 

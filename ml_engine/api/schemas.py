@@ -61,6 +61,24 @@ class AnalyzeRequest(BaseModel):
     patientId: Optional[str] = None
 
 
+class OCRDrug(BaseModel):
+    """Drug information from OCR structured output."""
+    name: str
+    dose: Optional[str] = None
+    frequency: Optional[str] = None
+    duration: Optional[str] = None
+    quantity: Optional[str] = None
+    instructions: Optional[str] = None
+
+
+class AnalyzeFromOCRRequest(BaseModel):
+    """Request model for analyzing prescription from OCR structured output."""
+    structuredDrugs: List[OCRDrug]  # from Gemini OCR directly
+    rawText: str  # full OCR text (backup)
+    patientData: PatientData
+    prescriptionText: Optional[str] = ""  # optional override
+
+
 class OCRRequest(BaseModel):
     """Request model for OCR processing."""
     image_b64: str = Field(..., min_length=100)

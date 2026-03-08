@@ -17,6 +17,8 @@ import uvicorn
 # Add parent directory to path so we can import sibling modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from rules.rules_engine import run_all_checks, normalise
+
 from api.schemas import (
     AnalyzeRequest,
     AnalyzeResponse,
@@ -26,7 +28,9 @@ from api.schemas import (
     ExtractedDrug,
     ErrorDetail,
     StructuredDrug,
-    PatientInfo
+    PatientInfo,
+    AnalyzeFromOCRRequest,
+    OCRDrug
 )
 
 # Import model modules (lazy - they load on first use)
@@ -95,7 +99,7 @@ def health_check():
 async def analyze_prescription(request: AnalyzeRequest):
     """
     Main prescription analysis endpoint.
-    Runs all 4 ML models + rule checks to detect errors.
+    Uses rules engine for reliable error detection.
     """
     start_time = time.time()
     errors = []
@@ -103,154 +107,119 @@ async def analyze_prescription(request: AnalyzeRequest):
     prescription_id = f"RX-{uuid.uuid4().hex[:8].upper()}"
     patient_dict = request.patientData.dict()
     text = request.prescriptionText
-    
-    # ========================================================================
-    # STEP 1 — NER: Extract drugs, doses, frequencies
-    # ========================================================================
+
+    # ── STEP 1: NER ──────────────────────────────────────────────────────────
+    drug_names = []
+    extracted_drugs = []
     try:
         ner_result = extract_entities(text)
         drug_names = ner_result.get("drugs", [])
         dose_tokens = ner_result.get("doses", [])
         freq_tokens = ner_result.get("frequencies", [])
-        duration_tokens = ner_result.get("durations", [])
+        dur_tokens  = ner_result.get("durations", [])
+        
+        extracted_drugs = [
+            ExtractedDrug(
+                drug_name=drug,
+                dose=dose_tokens[i] if i < len(dose_tokens) else None,
+                frequency=freq_tokens[i] if i < len(freq_tokens) else None,
+                duration=dur_tokens[i] if i < len(dur_tokens) else None
+            )
+            for i, drug in enumerate(drug_names)
+        ]
     except Exception as e:
         print(f"NER error: {e}")
-        drug_names = []
-        dose_tokens, freq_tokens, duration_tokens = [], [], []
-    
-    # Build extracted_drugs list
-    extracted_drugs = [
-        ExtractedDrug(
-            drug_name=drug,
-            dose=dose_tokens[i] if i < len(dose_tokens) else None,
-            frequency=freq_tokens[i] if i < len(freq_tokens) else None,
-            duration=duration_tokens[i] if i < len(duration_tokens) else None
+        # Fallback: extract drug names with regex from text
+        drug_pattern = re.compile(
+            r'\b(Metformin|Aspirin|Warfarin|Amoxicillin|Atorvastatin|'
+            r'Amlodipine|Lisinopril|Metoprolol|Betaloc|Atenolol|Digoxin|'
+            r'Furosemide|Tramadol|Codeine|Morphine|Ibuprofen|Diclofenac|'
+            r'Paracetamol|Omeprazole|Pantoprazole|Ciprofloxacin|'
+            r'Azithromycin|Clarithromycin|Ceftriaxone|Cephalexin|'
+            r'Simvastatin|Rosuvastatin|Carbamazepine|Spironolactone|'
+            r'Verapamil|Diltiazem|Cimetidine|Ranitidine|Famotidine|'
+            r'Dorzolamide|Oxprenolol|Oxprelol|Telmisartan|Losartan|'
+            r'Glimepiride|Sitagliptin|Levothyroxine|Sertraline|Fluoxetine|'
+            r'Prednisolone|Dexamethasone|Salbutamol|Theophylline|Ramipril|'
+            r'Cetirizine|Naproxen|Ketorolac)\b',
+            re.IGNORECASE
         )
-        for i, drug in enumerate(drug_names)
-    ]
+        drug_names = list(dict.fromkeys(
+            m.group(0) for m in drug_pattern.finditer(text)
+        ))
+        extracted_drugs = [ExtractedDrug(drug_name=d) for d in drug_names]
+
+    # ── STEP 2: Extract doses from text for dosage checking ─────────────────
+    # Build extracted_drugs_raw for rules engine
+    extracted_drugs_raw = []
+    for ed in extracted_drugs:
+        extracted_drugs_raw.append({
+            "drug_name": ed.drug_name,
+            "dose": ed.dose
+        })
     
-    # ========================================================================
-    # STEP 2 — Indication Mismatch Check
-    # ========================================================================
+    # If doses missing from NER, try regex extraction
+    if drug_names and not any(e.dose for e in extracted_drugs):
+        # Pattern: "DrugName 500mg" or "DrugName 500 mg"
+        for i, drug in enumerate(drug_names):
+            pattern = re.compile(
+                re.escape(drug) + r'\s+(\d+\.?\d*)\s*(?:mg|mcg|ml|units?)',
+                re.IGNORECASE
+            )
+            m = pattern.search(text)
+            if m:
+                extracted_drugs[i] = ExtractedDrug(
+                    drug_name=extracted_drugs[i].drug_name,
+                    dose=m.group(0).split(drug, 1)[-1].strip(),
+                    frequency=extracted_drugs[i].frequency,
+                    duration=extracted_drugs[i].duration
+                )
+                extracted_drugs_raw[i]["dose"] = m.group(0).split(drug, 1)[-1].strip()
+
+    # ── STEP 3: RUN RULES ENGINE (ALL 4 CHECKS) ─────────────────────────────
     if drug_names:
         try:
-            mismatch_results = check_all_drugs(drug_names, patient_dict)
-            for result in mismatch_results:
-                if result.get('is_mismatch'):
-                    drug_class = result.get('drug_class', 'unknown')
-                    drug_indications = result.get('drug_indications', 'unknown')
-                    diagnosis_list = patient_dict.get('diagnosis', [])
-                    
-                    explanation = (
-                        f"Drug class '{drug_class}' "
-                        f"indicated for: {drug_indications}. "
-                        f"Patient diagnosis: {diagnosis_list}. "
-                        f"This combination was flagged as potentially inappropriate."
-                    )
-                    
-                    solution = (
-                        f"Verify clinical rationale for prescribing {result['drug_name']} "
-                        f"for this diagnosis. If off-label use, document justification. "
-                        f"Consider alternatives indicated for the patient's condition."
-                    )
-                    
-                    errors.append(ErrorDetail(
-                        error_type="INDICATION_MISMATCH",
-                        drug=result['drug_name'],
-                        severity=result['risk_level'],
-                        message=f"Drug '{result['drug_name']}' may not be indicated for "
-                                f"{diagnosis_list}",
-                        explanation=explanation,
-                        solution=solution,
-                        confidence=result['confidence'],
-                        details={
-                            "drug_class": drug_class,
-                            "drug_indications": drug_indications
-                        }
-                    ))
+            rules_result = run_all_checks(
+                drug_names=drug_names,
+                patient_data=patient_dict,
+                extracted_drugs=extracted_drugs_raw
+            )
+            
+            for err in rules_result["errors"]:
+                errors.append(ErrorDetail(
+                    error_type=err["error_type"],
+                    drug=err.get("drug"),
+                    drug_a=err.get("drug_a"),
+                    drug_b=err.get("drug_b"),
+                    severity=err["severity"],
+                    message=err["message"],
+                    explanation=err.get("explanation"),
+                    solution=err.get("solution"),
+                    confidence=err.get("confidence"),
+                    details=err.get("details")
+                ))
         except Exception as e:
-            print(f"Classifier error: {e}")
-    
-    # ========================================================================
-    # STEP 3 — Dosage Anomaly Check
-    # ========================================================================
-    for drug in extracted_drugs:
-        if drug.dose is not None:
-            try:
-                # Parse dose_mg from dose string
-                dose_match = re.search(r'(\d+\.?\d*)', drug.dose or "")
-                dose_mg = float(dose_match.group(1)) if dose_match else 0
-                
-                if dose_mg > 0:
-                    anomaly = check_dosage_anomaly(
-                        drug.drug_name,
-                        dose_mg,
-                        patient_dict.get('age', 40),
-                        patient_dict.get('weight_kg', 70)
-                    )
-                    if anomaly['is_anomaly']:
-                        ratio = anomaly['dose_ratio']
-                        direction = "higher" if ratio > 1 else "lower"
-                        normal_dose = anomaly['normal_dose_mg']
-                        
-                        explanation = (
-                            f"Prescribed dose ({dose_mg} mg) is "
-                            f"{ratio:.1f}x the standard dose ({normal_dose} mg). "
-                            f"{'Overdose risks toxicity.' if ratio > 1 else 'Underdose may be ineffective.'}"
-                        )
-                        
-                        solution = (
-                            f"{'Reduce' if ratio > 1 else 'Increase'} the dose to the "
-                            f"recommended {normal_dose} mg. "
-                            f"Verify patient weight, renal/hepatic function. "
-                            f"Consult dosing guidelines for this specific patient profile."
-                        )
-                        
-                        errors.append(ErrorDetail(
-                            error_type="DOSAGE_ERROR",
-                            drug=drug.drug_name,
-                            severity=anomaly['severity'],
-                            message=anomaly['message'],
-                            explanation=explanation,
-                            solution=solution,
-                            details={
-                                "prescribed_dose": dose_mg,
-                                "normal_dose": normal_dose,
-                                "dose_ratio": ratio
-                            }
-                        ))
-            except Exception as e:
-                print(f"Anomaly check error for {drug.drug_name}: {e}")
-    
-    # ========================================================================
-    # STEP 4 — LASA Check
-    # ========================================================================
+            print(f"Rules engine error: {e}")
+
+    # ── STEP 4: LASA Check (already working) ─────────────────────────────────
     for drug_name in drug_names:
         try:
             lasa = check_lasa_confusion(drug_name)
-            if lasa['has_lasa_risk'] and lasa['risk_level'] in ['CRITICAL', 'HIGH']:
-                pairs_str = ', '.join([p['partner'] for p in lasa['known_lasa_pairs']])
-                
-                explanation = (
-                    f"'{drug_name}' has known look-alike/sound-alike similarity with: "
-                    f"{pairs_str}. Dispensing errors between these drugs are documented "
-                    f"in medical literature and can have serious consequences."
-                )
-                
-                solution = (
-                    f"Use TALL MAN lettering: write drug name with emphasis on "
-                    f"distinguishing characters. Verbally confirm drug name with patient. "
-                    f"Apply barcode verification at dispensing. Double-check with a "
-                    f"second pharmacist before dispensing."
-                )
-                
+            if lasa['has_lasa_risk'] and lasa['risk_level'] in ['CRITICAL','HIGH']:
                 errors.append(ErrorDetail(
                     error_type="LASA",
                     drug=drug_name,
                     severity=lasa['risk_level'],
                     message=lasa['recommendation'],
-                    explanation=explanation,
-                    solution=solution,
+                    explanation=(
+                        f"'{drug_name}' has visual/phonetic similarity with other drugs: "
+                        f"{[p['partner'] for p in lasa['known_lasa_pairs']]}. "
+                        f"Dispensing errors between these drugs are documented."
+                    ),
+                    solution=(
+                        "Use TALL MAN lettering. Verbally confirm drug name. "
+                        "Apply barcode verification. Double-check before dispensing."
+                    ),
                     details={
                         "known_pairs": lasa['known_lasa_pairs'],
                         "phonetic_similar": lasa['phonetic_similar_drugs']
@@ -258,69 +227,33 @@ async def analyze_prescription(request: AnalyzeRequest):
                 ))
         except Exception as e:
             print(f"LASA error for {drug_name}: {e}")
-    
-    # ========================================================================
-    # STEP 5 — Allergy Check
-    # ========================================================================
-    allergies_lower = [a.lower() for a in patient_dict.get('allergies', [])]
-    for drug_name in drug_names:
-        if drug_name.lower() in allergies_lower:
-            explanation = (
-                f"Patient has a documented allergy to {drug_name}. "
-                f"Administering this drug may cause anaphylaxis, rash, "
-                f"angioedema, or other allergic reactions."
-            )
-            
-            solution = (
-                f"Immediately discontinue {drug_name}. "
-                f"Consider therapeutic alternatives: "
-                f"review allergy history and prescribe a drug from a "
-                f"different class without cross-reactivity."
-            )
-            
-            errors.append(ErrorDetail(
-                error_type="ALLERGY",
-                drug=drug_name,
-                severity="CRITICAL",
-                message=f"ALERT: Patient is allergic to {drug_name}!",
-                explanation=explanation,
-                solution=solution
-            ))
-    
-    # ========================================================================
-    # STEP 6 — Calculate risk score
-    # ========================================================================
-    severity_weights = {
-        "CRITICAL": 1.0,
-        "HIGH": 0.7,
-        "MEDIUM": 0.4,
-        "LOW": 0.2
-    }
-    
+
+    # ── STEP 5: Calculate risk score ─────────────────────────────────────────
+    severity_weights = {"CRITICAL":1.0,"HIGH":0.7,"MEDIUM":0.4,"LOW":0.2}
     if not errors:
         risk_score = 0.0
     else:
-        total = sum(severity_weights.get(e.severity, 0.1) for e in errors)
-        risk_score = min(1.0, total / max(len(errors), 1))
-    
+        scores = [severity_weights.get(e.severity, 0.1) for e in errors]
+        risk_score = min(1.0, max(scores) * 0.6 + (len(errors)-1) * 0.1)
+
     risk_level = (
-        "CRITICAL" if risk_score > 0.8 else
-        "HIGH"     if risk_score > 0.6 else
-        "MEDIUM"   if risk_score > 0.3 else
-        "LOW"      if risk_score > 0   else
+        "CRITICAL" if risk_score > 0.75 else
+        "HIGH"     if risk_score > 0.5  else
+        "MEDIUM"   if risk_score > 0.25 else
+        "LOW"      if risk_score > 0    else
         "SAFE"
     )
-    
+
+    error_types = list(set(e.error_type for e in errors))
     summary = (
-        f"✅ Prescription appears safe. {len(extracted_drugs)} drug(s) extracted."
+        f"✅ Prescription appears safe. {len(extracted_drugs)} drug(s) found."
         if not errors else
-        f"⚠️ {len(errors)} issue(s) found: "
-        f"{', '.join(set(e.error_type for e in errors))}. "
+        f"⚠️ {len(errors)} issue(s) found: {', '.join(error_types)}. "
         f"Risk level: {risk_level}."
     )
-    
+
     processing_time = (time.time() - start_time) * 1000
-    
+
     return AnalyzeResponse(
         status="analyzed",
         prescriptionId=prescription_id,
@@ -330,6 +263,133 @@ async def analyze_prescription(request: AnalyzeRequest):
         riskLevel=risk_level,
         summary=summary,
         processingTime_ms=round(processing_time, 2)
+    )
+
+
+# ============================================================================
+# ANALYZE FROM OCR ENDPOINT (Direct structured input)
+# ============================================================================
+
+@app.post("/analyze-from-ocr", response_model=AnalyzeResponse)
+async def analyze_from_ocr(request: AnalyzeFromOCRRequest):
+    """
+    Analyze prescription using Gemini's pre-parsed drug list.
+    Much more accurate than re-parsing OCR text with NER.
+    Bypasses NER completely - uses structured drugs directly from OCR.
+    """
+    start_time = time.time()
+    errors = []
+    prescription_id = f"RX-{uuid.uuid4().hex[:8].upper()}"
+    patient_dict = request.patientData.dict()
+    
+    # Build drug names and extracted_drugs directly from OCR structured data
+    drug_names = [d.name for d in request.structuredDrugs if d.name]
+    
+    extracted_drugs = [
+        ExtractedDrug(
+            drug_name=d.name,
+            dose=d.dose,
+            frequency=d.frequency,
+            duration=d.duration
+        )
+        for d in request.structuredDrugs if d.name
+    ]
+    
+    extracted_drugs_raw = [
+        {"drug_name": d.name, "dose": d.dose}
+        for d in request.structuredDrugs if d.name
+    ]
+    
+    if not drug_names:
+        # Fallback: try to extract from rawText if structuredDrugs is empty
+        if request.rawText:
+            fallback_req = AnalyzeRequest(
+                prescriptionText=request.rawText,
+                patientData=request.patientData
+            )
+            return await analyze_prescription(fallback_req)
+        return AnalyzeResponse(
+            status="no_drugs_found",
+            prescriptionId=prescription_id,
+            extractedDrugs=[],
+            errors=[],
+            riskScore=0.0,
+            riskLevel="SAFE",
+            summary="No drugs found in prescription. Please verify the image quality.",
+            processingTime_ms=0
+        )
+    
+    # Run Rules Engine (same as /analyze)
+    try:
+        rules_result = run_all_checks(
+            drug_names=drug_names,
+            patient_data=patient_dict,
+            extracted_drugs=extracted_drugs_raw
+        )
+        for err in rules_result["errors"]:
+            errors.append(ErrorDetail(
+                error_type=err["error_type"],
+                drug=err.get("drug"),
+                drug_a=err.get("drug_a"),
+                drug_b=err.get("drug_b"),
+                severity=err["severity"],
+                message=err["message"],
+                explanation=err.get("explanation"),
+                solution=err.get("solution"),
+                confidence=err.get("confidence"),
+                details=err.get("details")
+            ))
+    except Exception as e:
+        print(f"Rules engine error: {e}")
+    
+    # LASA check
+    for drug_name in drug_names:
+        try:
+            lasa = check_lasa_confusion(drug_name)
+            if lasa['has_lasa_risk'] and lasa['risk_level'] in ['CRITICAL','HIGH']:
+                errors.append(ErrorDetail(
+                    error_type="LASA",
+                    drug=drug_name,
+                    severity=lasa['risk_level'],
+                    message=lasa['recommendation'],
+                    explanation=f"'{drug_name}' has visual/phonetic similarity with: "
+                               f"{[p['partner'] for p in lasa['known_lasa_pairs']]}",
+                    solution="Use TALL MAN lettering. Verbally confirm drug name before dispensing.",
+                    details={"known_pairs": lasa['known_lasa_pairs']}
+                ))
+        except Exception as e:
+            print(f"LASA error: {e}")
+    
+    # Risk calculation (same logic as /analyze)
+    severity_weights = {"CRITICAL":1.0,"HIGH":0.7,"MEDIUM":0.4,"LOW":0.2}
+    risk_score = 0.0
+    if errors:
+        scores = [severity_weights.get(e.severity, 0.1) for e in errors]
+        risk_score = min(1.0, max(scores)*0.6 + (len(errors)-1)*0.1)
+    
+    risk_level = (
+        "CRITICAL" if risk_score > 0.75 else
+        "HIGH"     if risk_score > 0.5  else
+        "MEDIUM"   if risk_score > 0.25 else
+        "LOW"      if risk_score > 0    else "SAFE"
+    )
+    
+    error_types = list(set(e.error_type for e in errors))
+    summary = (
+        f"✅ Prescription appears safe. {len(extracted_drugs)} drug(s) checked."
+        if not errors else
+        f"⚠️ {len(errors)} issue(s): {', '.join(error_types)}. Risk: {risk_level}."
+    )
+    
+    return AnalyzeResponse(
+        status="analyzed",
+        prescriptionId=prescription_id,
+        extractedDrugs=extracted_drugs,
+        errors=errors,
+        riskScore=round(risk_score, 4),
+        riskLevel=risk_level,
+        summary=summary,
+        processingTime_ms=round((time.time()-start_time)*1000, 2)
     )
 
 
@@ -357,9 +417,13 @@ async def extract_text(request: OCRRequest):
         
         structured_data = result.get("structured", {})
         
+        # Log what we got from OCR
+        raw_drugs = structured_data.get("drugs", [])
+        print(f"  📦 ML API received {len(raw_drugs)} drugs from OCR pipeline")
+        
         # Build structured drugs list
         structured_drugs = []
-        for drug in structured_data.get("drugs", []):
+        for drug in raw_drugs:
             structured_drugs.append(StructuredDrug(
                 name=drug.get("name", ""),
                 dose=drug.get("dose"),
@@ -367,6 +431,8 @@ async def extract_text(request: OCRRequest):
                 duration=drug.get("duration"),
                 quantity=drug.get("quantity")
             ))
+        
+        print(f"  📋 ML API returning {len(structured_drugs)} structured drugs to Express")
         
         # Build patient info
         patient_info = None
