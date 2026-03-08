@@ -81,4 +81,102 @@ router.post(
   },
 );
 
+// POST /api/ocr/analyze
+// Accepts image + patientData, returns OCR result + full analysis
+router.post(
+  "/analyze",
+  verifyToken,
+  upload.single("prescription_image"),
+  async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file uploaded" });
+    }
+
+    try {
+      const base64Image = req.file.buffer.toString("base64");
+      const language = req.body.language || "english";
+
+      // Step 1: OCR
+      console.log(`🔍 OCR analyze - Language: ${language}`);
+      const ocrResponse = await mlAxios.post("/ocr", {
+        image_b64: base64Image,
+        language: language,
+      });
+      const ocrData = ocrResponse.data;
+
+      console.log(`📊 OCR Result:`, {
+        success: ocrData.success,
+        engine: ocrData.engine,
+        charCount: ocrData.charCount,
+        drugsCount: ocrData.structuredDrugs?.length || 0,
+        hasDrugs: !!ocrData.structuredDrugs?.length,
+      });
+
+      if (!ocrData.success || !ocrData.structuredDrugs?.length) {
+        console.log(`⚠️ OCR failed or no drugs found`);
+        return res.json({
+          ocrSuccess: false,
+          extractedText: ocrData.cleanedText || "",
+          structuredDrugs: [],
+          patientInfo: ocrData.patientInfo || null,
+          analysis: null,
+          message: "No drugs detected in image. Please check image quality.",
+        });
+      }
+
+      // Step 2: Parse patient data from request body
+      let patientData = {
+        age: 40,
+        gender: "Unknown",
+        weight_kg: 70,
+        diagnosis: [],
+        allergies: [],
+        current_medications: [],
+        comorbidities: [],
+      };
+      if (req.body.patientData) {
+        try {
+          const parsed = JSON.parse(req.body.patientData);
+          patientData = { ...patientData, ...parsed };
+        } catch (e) {
+          console.warn("Could not parse patientData from form body");
+        }
+      }
+
+      // Step 3: Analyze using structured drugs directly
+      console.log(`🔬 Analyzing ${ocrData.structuredDrugs.length} drugs...`);
+      const analyzeResponse = await mlAxios.post("/analyze-from-ocr", {
+        structuredDrugs: ocrData.structuredDrugs,
+        rawText: ocrData.cleanedText || ocrData.extractedText || "",
+        patientData: patientData,
+      });
+
+      console.log(`✅ Analysis complete:`, {
+        status: analyzeResponse.data.status,
+        errorsCount: analyzeResponse.data.errors?.length || 0,
+        riskLevel: analyzeResponse.data.riskLevel,
+      });
+
+      return res.json({
+        ocrSuccess: true,
+        extractedText: ocrData.cleanedText || ocrData.extractedText,
+        structuredDrugs: ocrData.structuredDrugs,
+        patientInfo: ocrData.patientInfo || null,
+        engine: ocrData.engine,
+        charCount: ocrData.charCount,
+        analysis: analyzeResponse.data,
+      });
+    } catch (err) {
+      console.error("❌ OCR analyze error:", err.message);
+      if (err.response?.data) {
+        console.error("ML API Error Details:", err.response.data);
+      }
+      return res.status(500).json({
+        error:
+          err.response?.data?.detail || err.message || "OCR analysis failed",
+      });
+    }
+  },
+);
+
 module.exports = router;
