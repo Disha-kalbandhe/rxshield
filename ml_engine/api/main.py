@@ -24,7 +24,9 @@ from api.schemas import (
     OCRResponse,
     HealthResponse,
     ExtractedDrug,
-    ErrorDetail
+    ErrorDetail,
+    StructuredDrug,
+    PatientInfo
 )
 
 # Import model modules (lazy - they load on first use)
@@ -339,7 +341,7 @@ async def analyze_prescription(request: AnalyzeRequest):
 async def extract_text(request: OCRRequest):
     """
     OCR endpoint for extracting text from prescription images.
-    Supports English (TrOCR) and Hindi/Marathi (Tesseract).
+    Supports Gemini Vision (primary) with structured extraction and Tesseract (fallback).
     """
     try:
         result = ocr_from_base64(
@@ -347,22 +349,52 @@ async def extract_text(request: OCRRequest):
             language=request.language.value
         )
         
-        if 'error' in result:
+        if 'error' in result and not result.get('text'):
             raise HTTPException(
                 status_code=400,
                 detail=f"OCR failed: {result['error']}"
             )
         
-        cleaned = clean_prescription_text(result['text'])
+        structured_data = result.get("structured", {})
+        
+        # Build structured drugs list
+        structured_drugs = []
+        for drug in structured_data.get("drugs", []):
+            structured_drugs.append(StructuredDrug(
+                name=drug.get("name", ""),
+                dose=drug.get("dose"),
+                frequency=drug.get("frequency"),
+                duration=drug.get("duration"),
+                quantity=drug.get("quantity")
+            ))
+        
+        # Build patient info
+        patient_info = None
+        if any(structured_data.get(k) for k in 
+               ["patient_name", "patient_age", "doctor_name", "hospital_clinic"]):
+            patient_info = PatientInfo(
+                patient_name=structured_data.get("patient_name"),
+                patient_age=structured_data.get("patient_age"),
+                patient_address=structured_data.get("patient_address"),
+                date=structured_data.get("date"),
+                hospital_clinic=structured_data.get("hospital_clinic"),
+                doctor_name=structured_data.get("doctor_name"),
+                special_instructions=structured_data.get("special_instructions")
+            )
+        
+        cleaned = result.get("cleanedText", 
+                             clean_prescription_text(result.get("text", "")))
         
         return OCRResponse(
-            extractedText=result['text'],
+            extractedText=result.get("text", ""),
             cleanedText=cleaned,
-            engine=result['engine'],
-            language=result.get('detected_language', result['language']),
-            confidence=result.get('confidence'),
+            engine=result.get("engine", "unknown"),
+            language=result.get("language", "unknown"),
+            confidence=result.get("confidence"),
             charCount=len(cleaned),
-            success=len(cleaned) > 0
+            success=len(cleaned) > 5,
+            structuredDrugs=structured_drugs,
+            patientInfo=patient_info
         )
     except HTTPException:
         raise

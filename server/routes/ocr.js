@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const axios = require("axios");
+const mlAxios = require("../utils/axiosML");
 const multer = require("multer");
 const { verifyToken } = require("../middleware/auth");
 const { db } = require("../config/firebase");
@@ -34,15 +34,11 @@ router.post(
       const base64Image = req.file.buffer.toString("base64");
       const language = req.body.language || "auto";
 
-      // Call ML API
-      const mlResponse = await axios.post(
-        `${process.env.ML_API_URL}/ocr`,
-        {
-          image_b64: base64Image,
-          language: language,
-        },
-        { timeout: 120000 }, // 2 minutes
-      );
+      // Call ML API using mlAxios utility
+      const mlResponse = await mlAxios.post("/ocr", {
+        image_b64: base64Image,
+        language: language,
+      });
 
       const ocrData = mlResponse.data;
 
@@ -65,8 +61,9 @@ router.post(
         language: ocrData.language,
         confidence: ocrData.confidence,
         charCount: ocrData.charCount,
-        linesDetected: ocrData.lines_detected || null,
         success: ocrData.success,
+        structuredDrugs: ocrData.structuredDrugs || [],
+        patientInfo: ocrData.patientInfo || null,
       });
     } catch (err) {
       console.error("OCR route error:", err.message);
