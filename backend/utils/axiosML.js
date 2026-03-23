@@ -15,7 +15,7 @@ mlAxios.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.code === "ECONNABORTED") {
-      err.message = "ML API timeout — is ml_engine/api/main.py running?";
+        err.message = "ML API timeout — is ml-service/api/main.py running?";
     }
     if (err.code === "ECONNREFUSED") {
       err.message = "ML API is offline — start with: python api/main.py";

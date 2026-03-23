@@ -148,16 +148,16 @@ __pycache__/
 venv/
 *.egg-info/
 .Python
-ml_engine/venv/
+ml-service/venv/
 
 # Node
-client/node_modules/
-server/node_modules/
+frontend/node_modules/
+backend/node_modules/
 node_modules/
 
 # Build
-client/dist/
+frontend/dist/
 
 # ML model weights and checkpoints (too large for GitHub)
-ml_engine/ner/saved_model/
+ml-service/ner/saved_model/
 tmpclaude-*
