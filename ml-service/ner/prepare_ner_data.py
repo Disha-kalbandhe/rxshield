@@ -198,4 +198,4 @@ for label in LABEL_MAP:
     cnt = tag_counts.get(label, 0)
     pct = cnt / total_toks * 100 if total_toks else 0
     print(Fore.YELLOW + f"       {label:<14} {cnt:>8} tokens  ({pct:5.2f}%)")
-print(Fore.GREEN + "📁 Saved to ml_engine/data/")
+print(Fore.GREEN + "📁 Saved to ml-service/data/")

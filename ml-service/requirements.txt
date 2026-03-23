@@ -1,0 +1,25 @@
+# API
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+pydantic==2.7.1
+python-dotenv==1.0.1
+
+# Core ML / data
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.5.1
+joblib==1.4.2
+
+# OCR / vision
+Pillow==10.3.0
+opencv-python-headless==4.9.0.80
+pytesseract==0.3.10
+
+# NER runtime
+torch==2.3.1
+transformers==4.41.2
+
+# External services / helpers
+google-generativeai==0.7.0
+jellyfish==1.1.0

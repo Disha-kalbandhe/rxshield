@@ -17,6 +17,8 @@ import re
 import io
 import platform
 import json
+import shutil
+from typing import Optional
 import numpy as np
 from difflib import get_close_matches, SequenceMatcher
 import google.generativeai as genai
@@ -26,18 +28,65 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Set Tesseract path for Windows
-if platform.system() == "Windows":
-    pytesseract.pytesseract.tesseract_cmd = (
-        r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-    )
+def _configure_tesseract_cmd() -> Optional[str]:
+    """
+    Configure pytesseract executable path in a safe way.
+
+    Priority:
+    1) TESSERACT_CMD env var (if valid)
+    2) PATH lookup via shutil.which("tesseract")
+    3) Common Windows install locations
+
+    Returns:
+        Resolved tesseract executable path if found, else None.
+    """
+    env_cmd = os.getenv("TESSERACT_CMD")
+    if env_cmd:
+        env_cmd = os.path.expandvars(os.path.expanduser(env_cmd)).strip('"')
+        if os.path.isfile(env_cmd):
+            pytesseract.pytesseract.tesseract_cmd = env_cmd
+            return env_cmd
+
+    path_cmd = shutil.which("tesseract")
+    if path_cmd:
+        pytesseract.pytesseract.tesseract_cmd = path_cmd
+        return path_cmd
+
+    if platform.system() == "Windows":
+        common_paths = [
+            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+            os.path.join(
+                os.getenv("LOCALAPPDATA", ""),
+                "Programs",
+                "Tesseract-OCR",
+                "tesseract.exe",
+            ),
+        ]
+        for candidate in common_paths:
+            if candidate and os.path.isfile(candidate):
+                pytesseract.pytesseract.tesseract_cmd = candidate
+                return candidate
+
+    return None
+
+
+TESSERACT_PATH = _configure_tesseract_cmd()
 
 # Configure Gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 
-GEMINI_MODEL = "gemini-2.0-flash-exp"
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash").strip()
+GEMINI_FALLBACK_MODELS = [
+    model_name.strip()
+    for model_name in os.getenv(
+        "GEMINI_FALLBACK_MODELS",
+        "gemini-1.5-flash-latest,gemini-2.0-flash,gemini-2.0-flash-lite",
+    ).split(",")
+    if model_name.strip()
+]
 _gemini_model = None
 
 # Known drug names database (for fuzzy matching)
@@ -421,6 +470,45 @@ STRICT RULES — follow exactly:
 - If a field is not visible, use null — never omit the field
 - Return ONLY the JSON object starting with {{ and ending with }}"""
 
+    def _generate_with_model_fallback(contents, temperature: float, max_output_tokens: int):
+        global _gemini_model, GEMINI_MODEL
+
+        try:
+            return model.generate_content(
+                contents,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=temperature,
+                    max_output_tokens=max_output_tokens
+                )
+            )
+        except Exception as primary_error:
+            error_text = str(primary_error).lower()
+            model_not_found = ("not found" in error_text) and ("model" in error_text)
+            if not model_not_found:
+                raise
+
+            print(f"  ⚠️ Primary Gemini model '{GEMINI_MODEL}' unavailable. Trying fallbacks...")
+            for fallback_model_name in GEMINI_FALLBACK_MODELS:
+                if fallback_model_name == GEMINI_MODEL:
+                    continue
+                try:
+                    fallback_model = genai.GenerativeModel(fallback_model_name)
+                    fallback_response = fallback_model.generate_content(
+                        contents,
+                        generation_config=genai.types.GenerationConfig(
+                            temperature=temperature,
+                            max_output_tokens=max_output_tokens
+                        )
+                    )
+                    GEMINI_MODEL = fallback_model_name
+                    _gemini_model = fallback_model
+                    print(f"  ✅ Switched Gemini OCR model to '{fallback_model_name}'")
+                    return fallback_response
+                except Exception as fallback_error:
+                    print(f"  ⚠️ Fallback model '{fallback_model_name}' failed: {fallback_error}")
+
+            raise primary_error
+
     try:
         # Create image part for Gemini
         image_part = {
@@ -428,12 +516,10 @@ STRICT RULES — follow exactly:
             "data": img_bytes
         }
         
-        response = model.generate_content(
+        response = _generate_with_model_fallback(
             [prompt, image_part],
-            generation_config=genai.types.GenerationConfig(
-                temperature=0.05,      # even lower for more deterministic extraction
-                max_output_tokens=4096  # increased from 2048 to handle long prescriptions
-            )
+            temperature=0.05,
+            max_output_tokens=4096
         )
         
         raw_response = response.text.strip()
@@ -637,8 +723,16 @@ List the drug names you can see (comma-separated):"""
             "structured": {}
         }
     except Exception as e:
-        print(f"  ❌ Gemini OCR error: {e}")
-        return None   # triggers fallback
+        error_msg = f"Gemini OCR error: {type(e).__name__}: {str(e)}"
+        print(f"  ❌ {error_msg}")
+        return {
+            "text": "",
+            "engine": "Gemini Vision (failed)",
+            "language": language,
+            "confidence": 0,
+            "error": error_msg,
+            "structured": {}
+        }
 
 
 # ============================================================================
@@ -657,6 +751,34 @@ def ocr_with_tesseract(image: Image.Image, language: str = "auto") -> dict:
         dict with OCR results
     """
     try:
+        if not TESSERACT_PATH:
+            return {
+                "text": "",
+                "engine": "error",
+                "language": language,
+                "confidence": 0,
+                "error": (
+                    "Tesseract OCR not found. Install Tesseract and set TESSERACT_CMD "
+                    "in ml-service/.env, or add 'tesseract' to PATH."
+                ),
+                "structured": {}
+            }
+
+        try:
+            pytesseract.get_tesseract_version()
+        except Exception:
+            return {
+                "text": "",
+                "engine": "error",
+                "language": language,
+                "confidence": 0,
+                "error": (
+                    "Tesseract OCR binary is not accessible. Verify TESSERACT_CMD "
+                    "in ml-service/.env points to a valid tesseract.exe and restart ML API."
+                ),
+                "structured": {}
+            }
+
         import cv2
         import numpy as np
         
@@ -695,12 +817,18 @@ def ocr_with_tesseract(image: Image.Image, language: str = "auto") -> dict:
             "structured": {}
         }
     except Exception as e:
+        error_msg = str(e)
+        if "tesseract is not installed" in error_msg.lower():
+            error_msg = (
+                "Tesseract OCR not found. Install Tesseract and set TESSERACT_CMD "
+                "in ml-service/.env, or add 'tesseract' to PATH."
+            )
         return {
             "text": "",
             "engine": "error",
             "language": language,
             "confidence": 0,
-            "error": str(e),
+            "error": error_msg,
             "structured": {}
         }
 
@@ -728,7 +856,10 @@ def run_ocr(image: Image.Image, language: str = "auto") -> dict:
         if result and result.get("text"):
             print(f"  ✅ Gemini extracted {len(result['text'])} chars")
             return result
-        print("  ⚠️ Gemini returned empty, falling back to Tesseract...")
+        if result and result.get("error"):
+            print(f"  ⚠️ {result['error']}")
+        else:
+            print("  ⚠️ Gemini returned empty, falling back to Tesseract...")
     else:
         print("⚠️ No GEMINI_API_KEY found, using Tesseract...")
     
@@ -818,6 +949,69 @@ def clean_prescription_text(raw_text: str) -> str:
     return '\n'.join(cleaned_lines)
 
 
+def _apply_regex_and_fuzzy_fallback(result: dict) -> None:
+    """
+    Populate result['structured']['drugs'] using regex/fuzzy extraction from cleaned text.
+    This runs when NER is unavailable or returns no drugs.
+    """
+    cleaned_text = result.get("cleanedText", "")
+    if not cleaned_text:
+        return
+
+    print("  ⚠️ Trying regex fallback...")
+    regex_drugs = extract_drugs_with_regex(cleaned_text)
+    if regex_drugs:
+        print(f"  ✅ Regex fallback found {len(regex_drugs)} drugs: {regex_drugs[:3]}")
+        fallback_drugs = [
+            {
+                "name": drug,
+                "dose": None,
+                "frequency": None,
+                "duration": None,
+                "quantity": None,
+                "instructions": None,
+            }
+            for drug in regex_drugs
+        ]
+        if "structured" not in result:
+            result["structured"] = {}
+        result["structured"]["drugs"] = fallback_drugs
+        return
+
+    print("  ⚠️ Regex fallback found no drugs, trying fuzzy matching...")
+    fuzzy_matches = fuzzy_match_drugs(cleaned_text, cutoff=0.75)
+    if fuzzy_matches:
+        print(f"  ✅ Fuzzy matching found {len(fuzzy_matches)} drugs:")
+        for detected, corrected, similarity in fuzzy_matches[:5]:
+            print(f"     '{detected}' -> '{corrected}' ({similarity:.0%} match)")
+
+        fallback_drugs = []
+        for detected_word, correct_name, similarity in fuzzy_matches:
+            dose_match = re.search(
+                rf'{re.escape(detected_word)}\s*(\d+\s*(?:mg|mcg|ml|gm|g|m))',
+                cleaned_text,
+                re.IGNORECASE,
+            )
+            dose = dose_match.group(1) if dose_match else None
+
+            fallback_drugs.append(
+                {
+                    "name": correct_name,
+                    "dose": dose,
+                    "frequency": None,
+                    "duration": None,
+                    "quantity": None,
+                    "instructions": f"Detected as '{detected_word}' with {similarity:.0%} confidence",
+                }
+            )
+
+        if "structured" not in result:
+            result["structured"] = {}
+        result["structured"]["drugs"] = fallback_drugs
+    else:
+        print("  ⚠️ All fallback methods (Regex, Fuzzy) found no drugs")
+
+
 # ============================================================================
 # SECTION 7 — Input Handlers (Base64 and File Path)
 # ============================================================================
@@ -849,7 +1043,8 @@ def ocr_from_base64(image_b64: str, language: str = "auto") -> dict:
         result["charCount"] = len(result.get("cleanedText", ""))
         result["success"] = len(result.get("cleanedText", "")) > 5
         
-        # NER FALLBACK: If Gemini didn't find drugs but we have text, try NER
+        # NER FALLBACK: If OCR didn't find drugs but we have text, try NER.
+        # If NER is unavailable/fails, continue with regex+fuzzy fallback.
         structured_drugs = result.get("structured", {}).get("drugs", [])
         if not structured_drugs and result.get("cleanedText"):
             print("  🔄 Gemini found no drugs, trying NER fallback on extracted text...")
@@ -879,52 +1074,13 @@ def ocr_from_base64(image_b64: str, language: str = "auto") -> dict:
                     result["structured"]["drugs"] = fallback_drugs
                     print(f"  📋 NER fallback populated {len(fallback_drugs)} structured drugs")
                 else:
-                    print("  ⚠️ NER fallback also found no drugs, trying regex fallback...")
-                    # REGEX FALLBACK: Last resort - look for known drug names
-                    regex_drugs = extract_drugs_with_regex(result["cleanedText"])
-                    if regex_drugs:
-                        print(f"  ✅ Regex fallback found {len(regex_drugs)} drugs: {regex_drugs[:3]}")
-                        fallback_drugs = [{"name": drug, "dose": None, "frequency": None,
-                                         "duration": None, "quantity": None, "instructions": None}
-                                        for drug in regex_drugs]
-                        if "structured" not in result:
-                            result["structured"] = {}
-                        result["structured"]["drugs"] = fallback_drugs
-                    else:
-                        print("  ⚠️ Regex fallback also found no drugs, trying fuzzy matching...")
-                        # FUZZY MATCHING: Catch OCR errors and misspellings
-                        fuzzy_matches = fuzzy_match_drugs(result["cleanedText"], cutoff=0.75)
-                        if fuzzy_matches:
-                            print(f"  ✅ Fuzzy matching found {len(fuzzy_matches)} drugs:")
-                            for detected, corrected, similarity in fuzzy_matches[:5]:
-                                print(f"     '{detected}' -> '{corrected}' ({similarity:.0%} match)")
-                            
-                            fallback_drugs = []
-                            for detected_word, correct_name, similarity in fuzzy_matches:
-                                # Extract dose from the line containing the drug
-                                dose_match = re.search(
-                                    rf'{re.escape(detected_word)}\s*(\d+\s*(?:mg|mcg|ml|gm|g|m))',
-                                    result["cleanedText"],
-                                    re.IGNORECASE
-                                )
-                                dose = dose_match.group(1) if dose_match else None
-                                
-                                fallback_drugs.append({
-                                    "name": correct_name,  # Use corrected name
-                                    "dose": dose,
-                                    "frequency": None,
-                                    "duration": None,
-                                    "quantity": None,
-                                    "instructions": f"Detected as '{detected_word}' with {similarity:.0%} confidence"
-                                })
-                            
-                            if "structured" not in result:
-                                result["structured"] = {}
-                            result["structured"]["drugs"] = fallback_drugs
-                        else:
-                            print("  ⚠️ All fallback methods (NER, Regex, Fuzzy) found no drugs")
+                    print("  ⚠️ NER fallback found no drugs")
             except Exception as e:
                 print(f"  ❌ Fallback error: {e}")
+
+            structured_drugs = result.get("structured", {}).get("drugs", [])
+            if not structured_drugs:
+                _apply_regex_and_fuzzy_fallback(result)
         
         return result
     except Exception as e:
@@ -963,7 +1119,8 @@ def ocr_from_file(image_path: str, language: str = "auto") -> dict:
         result["charCount"] = len(result.get("cleanedText", ""))
         result["success"] = len(result.get("cleanedText", "")) > 5
         
-        # NER FALLBACK: If Gemini didn't find drugs but we have text, try NER
+        # NER FALLBACK: If OCR didn't find drugs but we have text, try NER.
+        # If NER is unavailable/fails, continue with regex+fuzzy fallback.
         structured_drugs = result.get("structured", {}).get("drugs", [])
         if not structured_drugs and result.get("cleanedText"):
             print("  🔄 Gemini found no drugs, trying NER fallback on extracted text...")
@@ -993,52 +1150,13 @@ def ocr_from_file(image_path: str, language: str = "auto") -> dict:
                     result["structured"]["drugs"] = fallback_drugs
                     print(f"  📋 NER fallback populated {len(fallback_drugs)} structured drugs")
                 else:
-                    print("  ⚠️ NER fallback also found no drugs, trying regex fallback...")
-                    # REGEX FALLBACK: Last resort - look for known drug names
-                    regex_drugs = extract_drugs_with_regex(result["cleanedText"])
-                    if regex_drugs:
-                        print(f"  ✅ Regex fallback found {len(regex_drugs)} drugs: {regex_drugs[:3]}")
-                        fallback_drugs = [{"name": drug, "dose": None, "frequency": None,
-                                         "duration": None, "quantity": None, "instructions": None}
-                                        for drug in regex_drugs]
-                        if "structured" not in result:
-                            result["structured"] = {}
-                        result["structured"]["drugs"] = fallback_drugs
-                    else:
-                        print("  ⚠️ Regex fallback also found no drugs, trying fuzzy matching...")
-                        # FUZZY MATCHING: Catch OCR errors and misspellings
-                        fuzzy_matches = fuzzy_match_drugs(result["cleanedText"], cutoff=0.75)
-                        if fuzzy_matches:
-                            print(f"  ✅ Fuzzy matching found {len(fuzzy_matches)} drugs:")
-                            for detected, corrected, similarity in fuzzy_matches[:5]:
-                                print(f"     '{detected}' -> '{corrected}' ({similarity:.0%} match)")
-                            
-                            fallback_drugs = []
-                            for detected_word, correct_name, similarity in fuzzy_matches:
-                                # Extract dose from the line containing the drug
-                                dose_match = re.search(
-                                    rf'{re.escape(detected_word)}\s*(\d+\s*(?:mg|mcg|ml|gm|g|m))',
-                                    result["cleanedText"],
-                                    re.IGNORECASE
-                                )
-                                dose = dose_match.group(1) if dose_match else None
-                                
-                                fallback_drugs.append({
-                                    "name": correct_name,  # Use corrected name
-                                    "dose": dose,
-                                    "frequency": None,
-                                    "duration": None,
-                                    "quantity": None,
-                                    "instructions": f"Detected as '{detected_word}' with {similarity:.0%} confidence"
-                                })
-                            
-                            if "structured" not in result:
-                                result["structured"] = {}
-                            result["structured"]["drugs"] = fallback_drugs
-                        else:
-                            print("  ⚠️ All fallback methods (NER, Regex, Fuzzy) found no drugs")
+                    print("  ⚠️ NER fallback found no drugs")
             except Exception as e:
                 print(f"  ❌ Fallback error: {e}")
+
+            structured_drugs = result.get("structured", {}).get("drugs", [])
+            if not structured_drugs:
+                _apply_regex_and_fuzzy_fallback(result)
         
         return result
     except Exception as e:
