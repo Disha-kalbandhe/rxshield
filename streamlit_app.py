@@ -1,5 +1,5 @@
 import sys, os, json, re, io, base64
-sys.path.append(os.path.join(os.path.dirname(__file__), 'ml_engine'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'ml-service'))
 
 import streamlit as st
 from PIL import Image
@@ -92,7 +92,7 @@ def load_modules():
 run_all_checks, ocr_from_base64, resolve_drugs_from_text, clean_prescription_text, modules_ok = load_modules()
 
 if not modules_ok:
-    st.error("⚠️ Could not load ML modules. Check that ml_engine/ is in the project root.")
+    st.error("⚠️ Could not load ML modules. Check that ml-service/ is in the project root.")
     st.stop()
 
 # ── Sidebar — Patient Information ─────────────────────────────────────────────

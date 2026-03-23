@@ -69,8 +69,8 @@ router.post(
       console.error("OCR route error:", err.message);
 
       if (err.code === "ECONNREFUSED") {
-        return res.status(503).json({
-          error: "ML API is not running. Start ml_engine/api/main.py first.",
+          return res.status(503).json({
+            error: "ML API is not running. Start ml-service/api/main.py first.",
         });
       }
 
@@ -103,6 +103,9 @@ router.post(
         language: language,
       });
       const ocrData = ocrResponse.data;
+
+      // Log the raw OCR data received from the ML service
+      console.log("📄 Raw OCR Data from ML service:", JSON.stringify(ocrData, null, 2));
 
       console.log(`📊 OCR Result:`, {
         success: ocrData.success,
@@ -151,6 +154,9 @@ router.post(
         patientData: patientData,
       });
 
+      // Log the raw analysis data received from the ML service
+      console.log("📈 Raw Analysis Data from ML service:", JSON.stringify(analyzeResponse.data, null, 2));
+
       console.log(`✅ Analysis complete:`, {
         status: analyzeResponse.data.status,
         errorsCount: analyzeResponse.data.errors?.length || 0,
@@ -168,8 +174,12 @@ router.post(
       });
     } catch (err) {
       console.error("❌ OCR analyze error:", err.message);
-      if (err.response?.data) {
-        console.error("ML API Error Details:", err.response.data);
+      if (err.response) {
+        // Log the full error response from the ML service
+        console.error("ML API Error Status:", err.response.status);
+        console.error("ML API Error Data:", JSON.stringify(err.response.data, null, 2));
+      } else {
+        console.error("Error has no response object:", err);
       }
       return res.status(500).json({
         error:
