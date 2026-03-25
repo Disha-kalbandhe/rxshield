@@ -98,6 +98,9 @@ dist
 # Sveltekit cache directory
 .svelte-kit/
 
+# Python virtual environments
+ml-service/.venv/
+
 # vitepress build output
 **/.vitepress/dist
 
@@ -141,23 +144,3 @@ vite.config.ts.timestamp-*
 .env
 .env.local
 .env.production
-
-# Python
-__pycache__/
-*.py[cod]
-venv/
-*.egg-info/
-.Python
-ml-service/venv/
-
-# Node
-frontend/node_modules/
-backend/node_modules/
-node_modules/
-
-# Build
-frontend/dist/
-
-# ML model weights and checkpoints (too large for GitHub)
-ml-service/ner/saved_model/
-tmpclaude-*
