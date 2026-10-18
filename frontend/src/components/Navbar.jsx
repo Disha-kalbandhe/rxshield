@@ -10,12 +10,16 @@ const Navbar = ({ onMenuToggle }) => {
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
 
+  
   useEffect(() => {
-    // Check ML API health on mount
-    fetch("http://localhost:8000/health")
-      .then(() => setMlStatus("online"))
-      .catch(() => setMlStatus("offline"));
+  // Check deployed ML API health
+  fetch("https://rxshield-ml-service-2-0.onrender.com/health")
+    .then((response) => {
+      setMlStatus(response.ok ? "online" : "offline");
+    })
+    .catch(() => setMlStatus("offline"));
   }, []);
+
 
   const handleLogout = async () => {
     try {
